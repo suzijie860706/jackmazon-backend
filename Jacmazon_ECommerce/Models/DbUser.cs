@@ -13,7 +13,15 @@ public partial class DbUser
 
     public string UserName { get; set; } = null!;
 
+    public string? UserPhone { get; set; }
+
+    public string? UserEmail { get; set; }
+
     public int UserRank { get; set; }
 
     public bool UserApproved { get; set; }
+
+    public DateTime CreatedDate { get; set; }
+
+    public DateTime UpdatedDate { get; set; }
 }

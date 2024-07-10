@@ -142,7 +142,7 @@ namespace Jacmazon_ECommerce.Controllers
             List<DbUser> t = _loginContext.DbUsers.ToList();
             DbUser? userLogin = await _loginContext.DbUsers.FirstOrDefaultAsync(u => u.UserAccount == user.Email);
             //驗證帳密
-            if (userLogin != null)
+            if (userLogin != null && userLogin.UserAccount == user.Email)
             {
                 return Ok(new Response<string>
                 {
@@ -200,33 +200,6 @@ namespace Jacmazon_ECommerce.Controllers
             }
 
         }
-
-        /// <summary>
-        /// 取得產品資料
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet("ProductList2")]
-        //[Authorize]
-        public IActionResult ProductList2()
-        {
-            try
-            {
-                List<Product> products = _context.Products.ToList();
-                return Ok(new Response<List<Product>>
-                {
-                    Success = true,
-                    Status = StatusCodes.Status200OK,
-                    Message = "",
-                    Data = products
-                });
-            }
-            catch (Exception ex)
-            {
-                return Ok(ex);
-            }
-
-        }
-
 
         /// <summary>
         /// 取得新的Access Token
@@ -326,24 +299,92 @@ namespace Jacmazon_ECommerce.Controllers
             });
         }
 
-        [HttpGet("TestSQL")]
-        //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> TestSQL([FromQuery] string QQ)
+        /// <summary>
+        /// 驗證Email，是否已註冊
+        /// </summary>
+        /// <param name="refreshToken"></param>
+        /// <returns></returns>
+        [HttpPost("Email")]
+        public async Task<IActionResult> Email ([FromBody] string userEmail)
         {
-            try
+            if (userEmail == null || !ModelState.IsValid)
             {
-                DbUser? user = await _loginContext.DbUsers.FirstOrDefaultAsync();
-                if (user == null)
+                return Ok(new Response<string>
                 {
-                    return NotFound("測試失敗");
-                }
-                return Ok(QQ);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
+                    Success = false,
+                    Status = StatusCodes.Status400BadRequest,
+                    Message = "驗證錯誤",
+                    Data = ""
+                });
             }
 
+            DbUser? userLogin = await _loginContext.DbUsers.FirstOrDefaultAsync(u => u.UserEmail == userEmail);
+            if (userLogin != null)
+            {
+                return Ok(new Response<string>
+                {
+                    Success = false,
+                    Status = StatusCodes.Status401Unauthorized,
+                    Message = "電子信箱已註冊",
+                    Data = ""
+                });
+            }
+
+            #region 發送驗證碼回去，並新增至資料庫等待驗證
+            string verifyCode = "";
+            #endregion
+
+            return Ok(new Response<string>
+            {
+                Success = true,
+                Status = StatusCodes.Status200OK,
+                Message = "",
+                Data = verifyCode
+            });
+        }
+
+        /// <summary>
+        /// 驗證手機號碼是否已註冊
+        /// </summary>
+        /// <param name="refreshToken"></param>
+        /// <returns></returns>
+        [HttpPost("phone")]
+        public async Task<IActionResult> Phone([FromBody] string userPhone)
+        {
+            if (userPhone == null || !ModelState.IsValid)
+            {
+                return Ok(new Response<string>
+                {
+                    Success = false,
+                    Status = StatusCodes.Status400BadRequest,
+                    Message = "驗證錯誤",
+                    Data = ""
+                });
+            }
+
+            DbUser? userLogin = await _loginContext.DbUsers.FirstOrDefaultAsync(u => u.UserEmail == userPhone);
+            if (userLogin != null)
+            {
+                return Ok(new Response<string>
+                {
+                    Success = false,
+                    Status = StatusCodes.Status401Unauthorized,
+                    Message = "手機已註冊",
+                    Data = ""
+                });
+            }
+
+            #region 發送驗證碼回去，並新增至資料庫等待驗證
+            string verifyCode = "";
+            #endregion
+
+            return Ok(new Response<string>
+            {
+                Success = true,
+                Status = StatusCodes.Status200OK,
+                Message = "",
+                Data = verifyCode
+            });
         }
     }
 }

@@ -41,15 +41,19 @@ public partial class LoginContext : DbContext
             entity.ToTable("db_user");
 
             entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+            entity.Property(e => e.UpdatedDate).HasColumnType("datetime");
             entity.Property(e => e.UserAccount)
                 .HasMaxLength(20)
                 .IsUnicode(false);
+            entity.Property(e => e.UserEmail).HasMaxLength(50);
             entity.Property(e => e.UserName)
                 .HasMaxLength(20)
                 .IsUnicode(false);
             entity.Property(e => e.UserPassword)
                 .HasMaxLength(256)
                 .IsUnicode(false);
+            entity.Property(e => e.UserPhone).HasMaxLength(50);
         });
 
         OnModelCreatingPartial(modelBuilder);
