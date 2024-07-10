@@ -1,0 +1,20 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+<label id="Test">123123</label>
+<script type="text/javascript">
+    setInterval(startTimer, 1000);
+    function startTimer() {
+        document.getElementById("Test").innerHTML = new Date();
+    }
+</script>
+<br />
+@DateTime.Now
+<br />
+
+@TempData["add"]

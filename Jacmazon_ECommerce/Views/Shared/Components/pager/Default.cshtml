@@ -1,0 +1,46 @@
+﻿@model Jacmazon_ECommerce.Extensions.PagedResultBase
+@{
+    var urlTemplate = Url.Action() + "?page={0}";
+    var request = ViewContext.HttpContext.Request;
+    foreach (var key in request.Query.Keys)
+    {
+        if (key == "page")
+        {
+            continue;
+        }
+
+        urlTemplate += "&" + key + "=" + request.Query[key];
+    }
+
+    var startIndex = Math.Max(Model.CurrentPage - 5, 1);
+    var finishIndex = Math.Min(Model.CurrentPage + 5, Model.PageCount);
+}
+
+<div class="row">
+    <div class="col-md-4 col-sm-4 items-info">
+        Items @Model.FirstRowOnPage to @Model.LastRowOnPage of @Model.RowCount total
+    </div>
+    <div class="col-md-8 col-sm-8">
+        @if (Model.PageCount > 1)
+        {
+            <div class="center">
+                <div class="pagination">
+                    <a href="@urlTemplate.Replace("{0}", "1")">&laquo;</a>
+                    @for (var i = startIndex; i <= finishIndex; i++)
+                    {
+                        @if (i == Model.CurrentPage)
+                        {
+                            <a class="active">@i</a>
+                        }
+                        else
+                        {
+                            <a href="@urlTemplate.Replace("{0}", i.ToString())">@i</a>
+                        }
+                    }
+                    <a href="@urlTemplate.Replace("{0}", Model.PageCount.ToString())">&raquo;</a>
+
+                </div>
+            </div>
+        }
+    </div>
+</div>
