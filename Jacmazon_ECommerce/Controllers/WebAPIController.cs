@@ -9,6 +9,10 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Antiforgery;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using System.Globalization;
+using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Jacmazon_ECommerce.Controllers
 {
@@ -279,9 +283,10 @@ namespace Jacmazon_ECommerce.Controllers
         /// <param name="refreshToken"></param>
         /// <returns></returns>
         [HttpPost("Email")]
-        public async Task<IActionResult> Email([FromBody] string userEmail)
+        public async Task<IActionResult> Email([FromBody] string email)
         {
-            if (userEmail == null || !ModelState.IsValid)
+            //驗證格式
+            if (string.IsNullOrWhiteSpace(email))
             {
                 return Ok(new Response<string>
                 {
@@ -292,28 +297,82 @@ namespace Jacmazon_ECommerce.Controllers
                 });
             }
 
-            User? userLogin = await _loginContext.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
-            if (userLogin != null)
+            try
             {
-                return Ok(new Response<string>
+                // Normalize the domain
+                email = Regex.Replace(email, @"(@)(.+)$", DomainMapper,
+                                      RegexOptions.None, TimeSpan.FromMilliseconds(200));
+
+                // Examines the domain part of the email and normalizes it.
+                string DomainMapper(Match match)
                 {
-                    Success = false,
-                    Status = StatusCodes.Status401Unauthorized,
-                    Message = "電子信箱已註冊",
-                    Data = ""
-                });
+                    // Use IdnMapping class to convert Unicode domain names.
+                    var idn = new IdnMapping();
+
+                    // Pull out and process domain name (throws ArgumentException on invalid)
+                    string domainName = idn.GetAscii(match.Groups[2].Value);
+
+                    return match.Groups[1].Value + domainName;
+                }
+            }
+            catch (RegexMatchTimeoutException e)
+            {
+                
+            }
+            catch (ArgumentException e)
+            {
+                
             }
 
-            #region 發送驗證碼回去，並新增至資料庫等待驗證
-            string verifyCode = "";
-            #endregion
+            try
+            {
+                #region 發送驗證碼回去，並新增至資料庫等待驗證
+                string verifyCode = "";
+                #endregion
+                if (Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250)))
+                {
+                    User? userLogin = await _loginContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+                    if (userLogin != null)
+                    {
+                        return Ok(new Response<string>
+                        {
+                            Success = false,
+                            Status = StatusCodes.Status401Unauthorized,
+                            Message = "電子信箱已註冊",
+                            Data = ""
+                        });
+                    }
+
+                    return Ok(new Response<string>
+                    {
+                        Success = true,
+                        Status = StatusCodes.Status200OK,
+                        Message = "",
+                        Data = verifyCode
+                    });
+                }
+                else
+                {
+                    return Ok(new Response<string>
+                    {
+                        Success = false,
+                        Status = StatusCodes.Status400BadRequest,
+                        Message = "格式錯誤",
+                        Data = ""
+                    });
+                }
+            }
+            catch (RegexMatchTimeoutException)
+            {
+                
+            }
 
             return Ok(new Response<string>
             {
-                Success = true,
-                Status = StatusCodes.Status200OK,
-                Message = "",
-                Data = verifyCode
+                Success = false,
+                Status = StatusCodes.Status400BadRequest,
+                Message = "驗證錯誤",
+                Data = ""
             });
         }
 

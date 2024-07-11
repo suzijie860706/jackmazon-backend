@@ -36,5 +36,16 @@ namespace Jacmazon_ECommerce.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+        //[HttpGet("getImage/{id}")]
+        //public FileContentResult? GetImage(int? id)
+        //{
+        //    Product? product = _context.Products.Find(id);
+        //    if (product != null && product.ThumbNailPhoto != null)
+        //    {
+        //        return File(product.ThumbNailPhoto, "image/" + Path.GetExtension(product.ThumbnailPhotoFileName));
+        //    }
+        //    else return null;
+        //}
     }
 }
