@@ -27,17 +27,10 @@ namespace Jacmazon_ECommerce.Controllers
             _loginContext = loginContext;
         }
 
-        [HttpGet("getImage/{id}")]
-        public FileContentResult? GetImage(int? id)
-        {
-            Product? product = _context.Products.Find(id);
-            if (product != null && product.ThumbNailPhoto != null)
-            {
-                return File(product.ThumbNailPhoto, "image/" + Path.GetExtension(product.ThumbnailPhotoFileName));
-            }
-            else return null;
-        }
-
+        /// <summary>
+        /// 取得防偽表單Token
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("antiForgery")]
         public IActionResult GetAntiforgeryToken()
         {
@@ -46,29 +39,6 @@ namespace Jacmazon_ECommerce.Controllers
                 new CookieOptions { HttpOnly = false });
 
             return Ok(new { token = tokens.RequestToken });
-        }
-
-        [HttpPost]
-        [AllowAnonymous]
-        //[ValidateAntiForgeryToken]
-        public IActionResult Post([FromBody] User user)
-        {
-            if (user == null)
-            {
-                return NotFound(new { message = "查無此人" });
-            }
-
-            string token = TokenServices.CreateAccessToken(user);
-            return Ok(new { token });
-        }
-
-
-
-        [AllowAnonymous]
-        [HttpGet]
-        public IActionResult Get()
-        {
-            return Content("匿名登入22", "text/plain");
         }
 
         /// <summary>
@@ -128,6 +98,11 @@ namespace Jacmazon_ECommerce.Controllers
             });
         }
 
+        /// <summary>
+        /// 註冊帳號
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         [HttpPost("CreateAccount")]
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateAccount([FromBody] User user)
@@ -152,9 +127,13 @@ namespace Jacmazon_ECommerce.Controllers
             {
                 Account = user.Account,
                 Password = user.Password,
-                Name = "",
+                Name = user.Name ?? "",
                 Rank = 0,
-                Approved = true
+                Approved = true,
+                Email = user.Email,
+                Phone = user.Phone,
+                CreateDate = DateTime.Now,
+                UpdateDate = DateTime.Now
             };
 
             await _loginContext.Users.AddAsync(newUser);
@@ -253,19 +232,19 @@ namespace Jacmazon_ECommerce.Controllers
             });
         }
 
-        [HttpGet("LoginIndex2")]
-        [Authorize(Roles = "Test")]
-        public IActionResult LoginIndex2()
-        {
-            return Content("");
-        }
+        //[HttpGet("LoginIndex2")]
+        //[Authorize(Roles = "Test")]
+        //public IActionResult LoginIndex2()
+        //{
+        //    return Content("");
+        //}
 
         /// <summary>
         /// 登出
         /// </summary>
         /// <param name="accessToken"></param>
         /// <returns></returns>
-        [HttpGet("Logout")]
+        [HttpPost("Logout")]
         public async Task<IActionResult> Logout([FromBody] string refreshToken)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -293,14 +272,14 @@ namespace Jacmazon_ECommerce.Controllers
                 Data = ""
             });
         }
-        /*
+
         /// <summary>
         /// 驗證Email，是否已註冊
         /// </summary>
         /// <param name="refreshToken"></param>
         /// <returns></returns>
         [HttpPost("Email")]
-        public async Task<IActionResult> Email ([FromBody] string userEmail)
+        public async Task<IActionResult> Email([FromBody] string userEmail)
         {
             if (userEmail == null || !ModelState.IsValid)
             {
@@ -313,7 +292,7 @@ namespace Jacmazon_ECommerce.Controllers
                 });
             }
 
-            DbUser? userLogin = await _loginContext.DbUsers.FirstOrDefaultAsync(u => u.UserEmail == userEmail);
+            User? userLogin = await _loginContext.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
             if (userLogin != null)
             {
                 return Ok(new Response<string>
@@ -357,7 +336,7 @@ namespace Jacmazon_ECommerce.Controllers
                 });
             }
 
-            DbUser? userLogin = await _loginContext.DbUsers.FirstOrDefaultAsync(u => u.UserEmail == userPhone);
+            User? userLogin = await _loginContext.Users.FirstOrDefaultAsync(u => u.Email == userPhone);
             if (userLogin != null)
             {
                 return Ok(new Response<string>
@@ -381,6 +360,6 @@ namespace Jacmazon_ECommerce.Controllers
                 Data = verifyCode
             });
         }
-        */
+
     }
 }

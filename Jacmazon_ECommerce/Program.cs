@@ -13,6 +13,8 @@ using Microsoft.IdentityModel.Tokens;
 using Jacmazon_ECommerce.Ｍiddlewares;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -90,12 +92,64 @@ builder.Services.AddControllers(options =>
 // 添加 Antiforgery 服務
 builder.Services.AddAntiforgery(options => options.HeaderName = "X-XSRF-TOKEN");
 
-builder.Services.AddOpenApiDocument(); // 註冊服務加入 OpenAPI 文件
-
-builder.Services.AddSwaggerGen(c =>
+#region swagger
+builder.Services.AddSwaggerGen(options =>
 {
-    c.EnableAnnotations();
+    //表頭描述
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Version = "v1",
+        Title = "Jacmazon API",
+        Description = "An ASP.NET Core Web API for managing Jacmazon",
+        TermsOfService = new Uri("https://example.com/terms"),
+        Contact = new OpenApiContact
+        {
+            Name = "Example Contact",
+            Url = new Uri("https://example.com/contact")
+        },
+        License = new OpenApiLicense
+        {
+            Name = "Example License",
+            Url = new Uri("https://example.com/license")
+        }
+    });
+
+    //xml文件增加註解
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    options.IncludeXmlComments(xmlPath);
+
+    //增加Token驗證欄位
+    options.AddSecurityDefinition("Bearer",
+    new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "JWT Authorization"
+    });
+
+    options.AddSecurityRequirement(
+       new OpenApiSecurityRequirement
+       {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                new string[] {}
+            }
+       });
+
 });
+#endregion
+
 
 //builder.Services.Configure
 var app = builder.Build();
@@ -110,8 +164,11 @@ app.UseCustomAuthorization();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseOpenApi();    // 啟動 OpenAPI 文件
-    app.UseSwaggerUi(); // 啟動 Swagger UI
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+    });
 }
 
 app.UseStaticFiles();
