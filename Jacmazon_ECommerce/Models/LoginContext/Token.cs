@@ -5,16 +5,12 @@ using System.Text.Json.Serialization;
 
 namespace Jacmazon_ECommerce.Models.LoginContext;
 
-/// <summary>
-/// 權杖
-/// </summary>
 public partial class Token
 {
     [Key]
     [JsonIgnore]
     public int Id { get; set; }
 
-    /// <summary>長期Token</summary>
     public string RefreshToken { get; set; } = null!;
 
     [JsonIgnore]

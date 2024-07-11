@@ -54,7 +54,7 @@ namespace Jacmazon_ECommerce.Controllers
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> Login([FromBody] User user)
         {
-            if (user.Account == null || user.Password == null || !ModelState.IsValid) 
+            if (string.IsNullOrEmpty(user.Email) || string.IsNullOrEmpty(user.Password) || !ModelState.IsValid)
             {
                 return Ok(new Response<string>
                 {
@@ -65,7 +65,7 @@ namespace Jacmazon_ECommerce.Controllers
                 });
             }
 
-            User? userLogin = await _loginContext.Users.FirstOrDefaultAsync(u => u.Account == user.Account && u.Password == user.Password);
+            User? userLogin = await _loginContext.Users.FirstOrDefaultAsync(u => u.Email == user.Email && u.Password == user.Password);
 
             //驗證帳密
             if (userLogin == null)
@@ -111,12 +111,12 @@ namespace Jacmazon_ECommerce.Controllers
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateAccount([FromBody] User user)
         {
-            if (user.Account == null || user.Password == null || !ModelState.IsValid) { return Content("驗證錯誤"); }
+            if (string.IsNullOrEmpty(user.Email) || string.IsNullOrEmpty(user.Password) || !ModelState.IsValid) { return Content("驗證錯誤"); }
 
             List<User> t = _loginContext.Users.ToList();
-            User? userLogin = await _loginContext.Users.FirstOrDefaultAsync(u => u.Account == user.Account);
+            User? userLogin = await _loginContext.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
             //驗證帳密
-            if (userLogin != null && userLogin.Account == user.Account)
+            if (userLogin != null && userLogin.Email == user.Email)
             {
                 return Ok(new Response<string>
                 {
@@ -129,12 +129,11 @@ namespace Jacmazon_ECommerce.Controllers
 
             User newUser = new()
             {
-                Account = user.Account,
+                Email = user.Email,
                 Password = user.Password,
                 Name = user.Name ?? "",
                 Rank = 0,
                 Approved = true,
-                Email = user.Email,
                 Phone = user.Phone,
                 CreateDate = DateTime.Now,
                 UpdateDate = DateTime.Now
@@ -224,7 +223,7 @@ namespace Jacmazon_ECommerce.Controllers
             string nameClaim = jwtSecurityToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value ?? "";
             string roleClaim = jwtSecurityToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? "";
 
-            User userTable = new User { Account = nameClaim, Password = roleClaim };
+            User userTable = new User { Email = nameClaim, Password = roleClaim };
             string token = TokenServices.CreateAccessToken(userTable);
 
             return Ok(new Response<string>
@@ -317,11 +316,11 @@ namespace Jacmazon_ECommerce.Controllers
             }
             catch (RegexMatchTimeoutException e)
             {
-                
+
             }
             catch (ArgumentException e)
             {
-                
+
             }
 
             try
@@ -364,7 +363,7 @@ namespace Jacmazon_ECommerce.Controllers
             }
             catch (RegexMatchTimeoutException)
             {
-                
+
             }
 
             return Ok(new Response<string>
@@ -396,7 +395,7 @@ namespace Jacmazon_ECommerce.Controllers
             }
 
             //格式驗證
-            if(!Regex.IsMatch(phone, @"^09[0-9]{8}$"))
+            if (!Regex.IsMatch(phone, @"^09[0-9]{8}$"))
             {
                 return Ok(new Response<string>
                 {

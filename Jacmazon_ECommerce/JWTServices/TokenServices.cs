@@ -22,7 +22,7 @@ namespace Jacmazon_ECommerce.JWTServices
                 Issuer = Settings.Issuer,
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new(ClaimTypes.Name, user.Account ?? ""),
+                    new(ClaimTypes.Name, user.Email ?? ""),
                     new(ClaimTypes.Role, user.Password ?? "")
                 }),
                 Expires = DateTime.Now.AddMinutes(20),
@@ -48,7 +48,7 @@ namespace Jacmazon_ECommerce.JWTServices
                 Issuer = Settings.Issuer,
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim(ClaimTypes.Name, user.Account ?? ""),
+                    new Claim(ClaimTypes.Name, user.Email ?? ""),
                     new Claim(ClaimTypes.Role, user.Password ?? "")
                 }),
                 Expires = Settings.Refresh_Expired_Date(),
