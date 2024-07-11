@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Jacmazon_ECommerce.Models;
+namespace Jacmazon_ECommerce.Models.AdventureWorksLT2016Context;
 
 /// <summary>
 /// Cross-reference table mapping customers to their address(es).
@@ -17,11 +17,6 @@ public partial class CustomerAddress
     /// Primary key. Foreign key to Address.AddressID.
     /// </summary>
     public int AddressId { get; set; }
-
-    /// <summary>
-    /// The kind of Address. One of: Archive, Billing, Home, Main Office, Primary, Shipping
-    /// </summary>
-    public string AddressType { get; set; } = null!;
 
     /// <summary>
     /// ROWGUIDCOL number uniquely identifying the record. Used to support a merge replication sample.

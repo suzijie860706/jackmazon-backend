@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Jacmazon_ECommerce.Models;
+namespace Jacmazon_ECommerce.Models.AdventureWorksLT2016Context;
 
 /// <summary>
 /// Individual products associated with a specific sales order. See SalesOrderHeader.

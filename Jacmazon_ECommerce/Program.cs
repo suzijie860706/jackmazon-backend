@@ -1,5 +1,6 @@
 using Jacmazon_ECommerce.Interfaces;
 using Jacmazon_ECommerce.Models;
+using Jacmazon_ECommerce.Models.AdventureWorksLT2016Context;
 using Jacmazon_ECommerce.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +12,7 @@ using Jacmazon_ECommerce.JWTServices;
 using Microsoft.IdentityModel.Tokens;
 using Jacmazon_ECommerce.Ｍiddlewares;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +21,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 //資料庫
-builder.Services.AddDbContext<AdventureWorksLt2019Context>(option =>
+builder.Services.AddDbContext<AdventureWorksLt2016Context>(option =>
     option.UseSqlServer(builder.Configuration.GetConnectionString("AdventureWorksLT2016")));
 builder.Services.AddDbContext<LoginContext>(option =>
     option.UseSqlServer(builder.Configuration.GetConnectionString("Login")));
@@ -56,16 +58,11 @@ builder.Services.AddAuthentication(x =>
         ValidateAudience = false, //哪些客戶可以使用? 
         ValidIssuer = Settings.Issuer
     };
-}).
-AddCookie(option =>
-{
-    option.AccessDeniedPath = "/Shop/AccessDeny"; //拒絕
-    option.LoginPath = "/Shop/Login"; //登入頁
-}); ;
+});
 #endregion
 
-builder.Services.AddScoped<ICRUDService<ProductCategory>,CRUDService<ProductCategory>>();
-builder.Services.AddScoped<ICRUDService<Product>,CRUDService<Product>>();
+builder.Services.AddScoped<ICRUDService<ProductCategory>, CRUDService<ProductCategory>>();
+builder.Services.AddScoped<ICRUDService<Product>, CRUDService<Product>>();
 //回應快取
 builder.Services.AddResponseCaching();
 
@@ -93,6 +90,13 @@ builder.Services.AddControllers(options =>
 // 添加 Antiforgery 服務
 builder.Services.AddAntiforgery(options => options.HeaderName = "X-XSRF-TOKEN");
 
+builder.Services.AddOpenApiDocument(); // 註冊服務加入 OpenAPI 文件
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.EnableAnnotations();
+});
+
 //builder.Services.Configure
 var app = builder.Build();
 
@@ -104,10 +108,12 @@ var app = builder.Build();
 app.UseCustomAuthorization();
 
 // Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseOpenApi();    // 啟動 OpenAPI 文件
+    app.UseSwaggerUi(); // 啟動 Swagger UI
 }
+
 app.UseStaticFiles();
 
 app.UseRouting();
@@ -124,6 +130,7 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Shop}/{action=login}/{id?}");
+    pattern: "{controller=home}/{action=index}/{id?}"
+);
 
 app.Run();

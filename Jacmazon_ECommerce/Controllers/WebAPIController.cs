@@ -1,19 +1,14 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Jacmazon_ECommerce.Data;
 using Jacmazon_ECommerce.Models;
+using Jacmazon_ECommerce.Models.LoginContext;
+using Jacmazon_ECommerce.Models.AdventureWorksLT2016Context;
 using Microsoft.EntityFrameworkCore;
 using Jacmazon_ECommerce.JWTServices;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using Microsoft.AspNetCore.Antiforgery;
-using Microsoft.Identity.Client;
-using Jacmazon_ECommerce.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
-using Azure.Core;
-using NuGet.Protocol.Plugins;
 
 namespace Jacmazon_ECommerce.Controllers
 {
@@ -21,11 +16,11 @@ namespace Jacmazon_ECommerce.Controllers
     [ApiController]
     public class WebAPIController : ControllerBase
     {
-        private readonly AdventureWorksLt2019Context _context;
+        private readonly AdventureWorksLt2016Context _context;
         private readonly LoginContext _loginContext;
 
         private readonly IAntiforgery _antiforgery;
-        public WebAPIController(AdventureWorksLt2019Context context, IAntiforgery antiforgery, LoginContext loginContext)
+        public WebAPIController(AdventureWorksLt2016Context context, IAntiforgery antiforgery, LoginContext loginContext)
         {
             _context = context;
             _antiforgery = antiforgery;
@@ -56,7 +51,7 @@ namespace Jacmazon_ECommerce.Controllers
         [HttpPost]
         [AllowAnonymous]
         //[ValidateAntiForgeryToken]
-        public IActionResult Post([FromBody] UserTable user)
+        public IActionResult Post([FromBody] User user)
         {
             if (user == null)
             {
@@ -83,9 +78,9 @@ namespace Jacmazon_ECommerce.Controllers
         /// <returns></returns>
         [HttpPost("Login")]
         //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login([FromBody] UserTable user)
+        public async Task<IActionResult> Login([FromBody] User user)
         {
-            if (user.Email == null || user.Password == null || !ModelState.IsValid) 
+            if (user.Account == null || user.Password == null || !ModelState.IsValid) 
             {
                 return Ok(new Response<string>
                 {
@@ -96,7 +91,7 @@ namespace Jacmazon_ECommerce.Controllers
                 });
             }
 
-            DbUser? userLogin = await _loginContext.DbUsers.FirstOrDefaultAsync(u => u.UserAccount == user.Email && u.UserPassword == user.Password);
+            User? userLogin = await _loginContext.Users.FirstOrDefaultAsync(u => u.Account == user.Account && u.Password == user.Password);
 
             //驗證帳密
             if (userLogin == null)
@@ -114,7 +109,7 @@ namespace Jacmazon_ECommerce.Controllers
             string refreshToken = TokenServices.CreateRefreshToken(user);
 
             //新增至資料庫
-            _loginContext.DbTokens.Add(new DbToken
+            _loginContext.Tokens.Add(new Token
             {
                 RefreshToken = refreshToken,
                 ExpiredDate = Settings.Refresh_Expired_Date(),
@@ -135,14 +130,14 @@ namespace Jacmazon_ECommerce.Controllers
 
         [HttpPost("CreateAccount")]
         //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateAccount([FromBody] UserTable user)
+        public async Task<IActionResult> CreateAccount([FromBody] User user)
         {
-            if (user.Email == null || user.Password == null || !ModelState.IsValid) { return Content("驗證錯誤"); }
+            if (user.Account == null || user.Password == null || !ModelState.IsValid) { return Content("驗證錯誤"); }
 
-            List<DbUser> t = _loginContext.DbUsers.ToList();
-            DbUser? userLogin = await _loginContext.DbUsers.FirstOrDefaultAsync(u => u.UserAccount == user.Email);
+            List<User> t = _loginContext.Users.ToList();
+            User? userLogin = await _loginContext.Users.FirstOrDefaultAsync(u => u.Account == user.Account);
             //驗證帳密
-            if (userLogin != null && userLogin.UserAccount == user.Email)
+            if (userLogin != null && userLogin.Account == user.Account)
             {
                 return Ok(new Response<string>
                 {
@@ -153,16 +148,16 @@ namespace Jacmazon_ECommerce.Controllers
                 });
             }
 
-            DbUser newUser = new()
+            User newUser = new()
             {
-                UserAccount = user.Email,
-                UserPassword = user.Password,
-                UserName = "",
-                UserRank = 0,
-                UserApproved = true
+                Account = user.Account,
+                Password = user.Password,
+                Name = "",
+                Rank = 0,
+                Approved = true
             };
 
-            await _loginContext.DbUsers.AddAsync(newUser);
+            await _loginContext.Users.AddAsync(newUser);
             await _loginContext.SaveChangesAsync();
 
             return Ok(new Response<string>
@@ -208,7 +203,7 @@ namespace Jacmazon_ECommerce.Controllers
         [HttpPost("Refresh_Token")]
         public async Task<IActionResult> Refresh_Token([FromBody] string refreshToken)
         {
-            DbToken? dbToken = await _loginContext.DbTokens.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
+            Token? dbToken = await _loginContext.Tokens.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
 
             //Refresh Token不存在
             if (dbToken == null)
@@ -239,14 +234,14 @@ namespace Jacmazon_ECommerce.Controllers
             //更新資料庫
             dbToken.ExpiredDate = Settings.Refresh_Expired_Date();
             dbToken.UpdatedDate = DateTime.Now;
-            _loginContext.DbTokens.Update(dbToken);
+            _loginContext.Tokens.Update(dbToken);
             _loginContext.SaveChanges();
 
             //產生新的Access Token並回傳
             string nameClaim = jwtSecurityToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value ?? "";
             string roleClaim = jwtSecurityToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? "";
 
-            UserTable userTable = new UserTable { Email = nameClaim, Password = roleClaim };
+            User userTable = new User { Account = nameClaim, Password = roleClaim };
             string token = TokenServices.CreateAccessToken(userTable);
 
             return Ok(new Response<string>
@@ -274,7 +269,7 @@ namespace Jacmazon_ECommerce.Controllers
         public async Task<IActionResult> Logout([FromBody] string refreshToken)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            DbToken? dbToken = await _loginContext.DbTokens.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
+            Token? dbToken = await _loginContext.Tokens.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
 
             if (dbToken == null)
             {
@@ -287,7 +282,7 @@ namespace Jacmazon_ECommerce.Controllers
                 });
             }
 
-            _loginContext.DbTokens.Remove(dbToken);
+            _loginContext.Tokens.Remove(dbToken);
             _loginContext.SaveChanges();
 
             return Ok(new Response<string>
@@ -298,7 +293,7 @@ namespace Jacmazon_ECommerce.Controllers
                 Data = ""
             });
         }
-
+        /*
         /// <summary>
         /// 驗證Email，是否已註冊
         /// </summary>
@@ -386,5 +381,6 @@ namespace Jacmazon_ECommerce.Controllers
                 Data = verifyCode
             });
         }
+        */
     }
 }

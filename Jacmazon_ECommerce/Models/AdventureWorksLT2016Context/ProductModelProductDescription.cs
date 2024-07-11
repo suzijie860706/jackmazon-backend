@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Jacmazon_ECommerce.Models;
+namespace Jacmazon_ECommerce.Models.AdventureWorksLT2016Context;
 
 /// <summary>
 /// Cross-reference table mapping product descriptions and the language the description is written in.

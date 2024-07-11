@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Jacmazon_ECommerce.Models;
+namespace Jacmazon_ECommerce.Models.AdventureWorksLT2016Context;
 
 /// <summary>
 /// High-level product categorization.
@@ -17,11 +17,6 @@ public partial class ProductCategory
     /// Product category identification number of immediate ancestor category. Foreign key to ProductCategory.ProductCategoryID.
     /// </summary>
     public int? ParentProductCategoryId { get; set; }
-
-    /// <summary>
-    /// Category description.
-    /// </summary>
-    public string Name { get; set; } = null!;
 
     /// <summary>
     /// ROWGUIDCOL number uniquely identifying the record. Used to support a merge replication sample.

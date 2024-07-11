@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Jacmazon_ECommerce.Models;
+namespace Jacmazon_ECommerce.Models.AdventureWorksLT2016Context;
 
 public partial class ProductModel
 {
     public int ProductModelId { get; set; }
-
-    public string Name { get; set; } = null!;
 
     public string? CatalogDescription { get; set; }
 

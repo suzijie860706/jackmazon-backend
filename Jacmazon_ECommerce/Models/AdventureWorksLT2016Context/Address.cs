@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Jacmazon_ECommerce.Models;
+namespace Jacmazon_ECommerce.Models.AdventureWorksLT2016Context;
 
 /// <summary>
 /// Street address information for customers.
@@ -27,13 +27,6 @@ public partial class Address
     /// Name of the city.
     /// </summary>
     public string City { get; set; } = null!;
-
-    /// <summary>
-    /// Name of state or province.
-    /// </summary>
-    public string StateProvince { get; set; } = null!;
-
-    public string CountryRegion { get; set; } = null!;
 
     /// <summary>
     /// Postal code for the street address.

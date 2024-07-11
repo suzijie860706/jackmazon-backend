@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Jacmazon_ECommerce.Models;
+namespace Jacmazon_ECommerce.Models.AdventureWorksLT2016Context;
 
 /// <summary>
 /// Customer information.
@@ -14,29 +14,9 @@ public partial class Customer
     public int CustomerId { get; set; }
 
     /// <summary>
-    /// 0 = The data in FirstName and LastName are stored in western style (first name, last name) order.  1 = Eastern style (last name, first name) order.
-    /// </summary>
-    public bool NameStyle { get; set; }
-
-    /// <summary>
     /// A courtesy title. For example, Mr. or Ms.
     /// </summary>
     public string? Title { get; set; }
-
-    /// <summary>
-    /// First name of the person.
-    /// </summary>
-    public string FirstName { get; set; } = null!;
-
-    /// <summary>
-    /// Middle name or middle initial of the person.
-    /// </summary>
-    public string? MiddleName { get; set; }
-
-    /// <summary>
-    /// Last name of the person.
-    /// </summary>
-    public string LastName { get; set; } = null!;
 
     /// <summary>
     /// Surname suffix. For example, Sr. or Jr.
@@ -57,11 +37,6 @@ public partial class Customer
     /// E-mail address for the person.
     /// </summary>
     public string? EmailAddress { get; set; }
-
-    /// <summary>
-    /// Phone number associated with the person.
-    /// </summary>
-    public string? Phone { get; set; }
 
     /// <summary>
     /// Password for the e-mail account.

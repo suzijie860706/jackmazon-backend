@@ -1,6 +1,6 @@
 ﻿using Azure.Core;
 using Jacmazon_ECommerce.JWTServices;
-using Jacmazon_ECommerce.Models;
+using Jacmazon_ECommerce.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Protocols.WsTrust;
 using Microsoft.IdentityModel.Tokens;
@@ -8,6 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
+using Jacmazon_ECommerce.Models;
 
 namespace Jacmazon_ECommerce.Ｍiddlewares
 {

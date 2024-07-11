@@ -1,4 +1,4 @@
-﻿using Jacmazon_ECommerce.Models;
+﻿using Jacmazon_ECommerce.Models.LoginContext;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Security.Claims;
@@ -13,7 +13,7 @@ namespace Jacmazon_ECommerce.JWTServices
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public static string CreateAccessToken(UserTable user)
+        public static string CreateAccessToken(User user)
         {
             var key = Encoding.UTF8.GetBytes(Settings.Secret);
 
@@ -22,7 +22,7 @@ namespace Jacmazon_ECommerce.JWTServices
                 Issuer = Settings.Issuer,
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new(ClaimTypes.Name, user.Email ?? ""),
+                    new(ClaimTypes.Name, user.Account ?? ""),
                     new(ClaimTypes.Role, user.Password ?? "")
                 }),
                 Expires = DateTime.Now.AddMinutes(20),
@@ -39,7 +39,7 @@ namespace Jacmazon_ECommerce.JWTServices
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public static string CreateRefreshToken(UserTable user)
+        public static string CreateRefreshToken(User user)
         {
             var key = Encoding.UTF8.GetBytes(Settings.Secret);
 
@@ -48,7 +48,7 @@ namespace Jacmazon_ECommerce.JWTServices
                 Issuer = Settings.Issuer,
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim(ClaimTypes.Name, user.Email ?? ""),
+                    new Claim(ClaimTypes.Name, user.Account ?? ""),
                     new Claim(ClaimTypes.Role, user.Password ?? "")
                 }),
                 Expires = Settings.Refresh_Expired_Date(),

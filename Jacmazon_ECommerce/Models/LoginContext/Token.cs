@@ -1,9 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Swashbuckle.AspNetCore.Annotations;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
-namespace Jacmazon_ECommerce.Models;
+namespace Jacmazon_ECommerce.Models.LoginContext;
 
-public partial class DbToken
+public partial class Token
 {
     public int Id { get; set; }
 

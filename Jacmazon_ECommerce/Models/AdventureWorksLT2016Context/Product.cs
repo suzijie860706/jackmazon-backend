@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Jacmazon_ECommerce.Models;
+namespace Jacmazon_ECommerce.Models.AdventureWorksLT2016Context;
 
 /// <summary>
 /// Products sold or used in the manfacturing of sold products.
@@ -12,11 +12,6 @@ public partial class Product
     /// Primary key for Product records.
     /// </summary>
     public int ProductId { get; set; }
-
-    /// <summary>
-    /// Name of the product.
-    /// </summary>
-    public string Name { get; set; } = null!;
 
     /// <summary>
     /// Unique product identification number.

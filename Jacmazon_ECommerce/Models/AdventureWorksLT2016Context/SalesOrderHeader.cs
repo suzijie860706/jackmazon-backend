@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Jacmazon_ECommerce.Models;
+namespace Jacmazon_ECommerce.Models.AdventureWorksLT2016Context;
 
 /// <summary>
 /// General sales order information.
@@ -39,24 +39,9 @@ public partial class SalesOrderHeader
     public byte Status { get; set; }
 
     /// <summary>
-    /// 0 = Order placed by sales person. 1 = Order placed online by customer.
-    /// </summary>
-    public bool OnlineOrderFlag { get; set; }
-
-    /// <summary>
     /// Unique sales order identification number.
     /// </summary>
     public string SalesOrderNumber { get; set; } = null!;
-
-    /// <summary>
-    /// Customer purchase order number reference. 
-    /// </summary>
-    public string? PurchaseOrderNumber { get; set; }
-
-    /// <summary>
-    /// Financial accounting number reference.
-    /// </summary>
-    public string? AccountNumber { get; set; }
 
     /// <summary>
     /// Customer identification number. Foreign key to Customer.CustomerID.

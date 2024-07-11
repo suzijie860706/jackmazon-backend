@@ -21,36 +21,9 @@ namespace Jacmazon_ECommerce.Controllers
             
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            //ASMX Test
-            //CalculatorSoapClient calculatorSoapClient = new CalculatorSoapClient(CalculatorSoapClient.EndpointConfiguration.CalculatorSoap);
-
-            //var add = await calculatorSoapClient.AddAsync(1, 3);
-
-
-            //var total = new WebService3SoapClient(WebService3SoapClient.EndpointConfiguration.WebService3Soap);
-            //var aa = await total.HelloWorldAsync();
-            //TempData["add"] = aa.Body.HelloWorldResult;
-
-            //WCF TEst
-            CalculatorClient calculatorClient = new CalculatorClient();
-            try
-            {
-                var total = calculatorClient.AddAsync(1, 5);
-
-                TempData["add"] = total.Result;
-
-                await calculatorClient.CloseAsync();
-            }
-            catch (Exception)
-            {
-                calculatorClient.Abort();
-                throw;
-            }
-            
-
-            return View();
+            return Redirect("/swagger/index.html");
         }
 
         public IActionResult Privacy()

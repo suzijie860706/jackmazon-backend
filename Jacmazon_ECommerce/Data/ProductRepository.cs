@@ -1,5 +1,5 @@
 ﻿using Jacmazon_ECommerce.Interfaces;
-using Jacmazon_ECommerce.Models;
+using Jacmazon_ECommerce.Models.AdventureWorksLT2016Context;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
@@ -8,10 +8,10 @@ namespace Jacmazon_ECommerce.Data
 {
     public class ProductRepository : ICRUDRepository<Product>
     {
-        protected readonly AdventureWorksLt2019Context context;
+        protected readonly AdventureWorksLt2016Context context;
         protected readonly IConfiguration configuration;
 
-        public ProductRepository(AdventureWorksLt2019Context context,
+        public ProductRepository(AdventureWorksLt2016Context context,
             IConfiguration configuration)
         {
             this.context = context;

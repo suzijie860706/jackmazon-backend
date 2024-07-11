@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using Jacmazon_ECommerce.Models.AdventureWorksLT2016Context;
 using Microsoft.EntityFrameworkCore;
 
-namespace Jacmazon_ECommerce.Models;
+namespace Jacmazon_ECommerce.Data;
 
-public partial class AdventureWorksLt2019Context : DbContext
+public partial class AdventureWorksLt2016Context : DbContext
 {
-    public AdventureWorksLt2019Context()
+    public AdventureWorksLt2016Context()
     {
     }
 
-    public AdventureWorksLt2019Context(DbContextOptions<AdventureWorksLt2019Context> options)
+    public AdventureWorksLt2016Context(DbContextOptions<AdventureWorksLt2016Context> options)
         : base(options)
     {
     }
@@ -46,9 +47,7 @@ public partial class AdventureWorksLt2019Context : DbContext
     public virtual DbSet<VProductModelCatalogDescription> VProductModelCatalogDescriptions { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-    }
-
+    { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -62,10 +61,6 @@ public partial class AdventureWorksLt2019Context : DbContext
 
             entity.HasIndex(e => e.Rowguid, "AK_Address_rowguid").IsUnique();
 
-            entity.HasIndex(e => new { e.AddressLine1, e.AddressLine2, e.City, e.StateProvince, e.PostalCode, e.CountryRegion }, "IX_Address_AddressLine1_AddressLine2_City_StateProvince_PostalCode_CountryRegion");
-
-            entity.HasIndex(e => e.StateProvince, "IX_Address_StateProvince");
-
             entity.Property(e => e.AddressId)
                 .HasComment("Primary key for Address records.")
                 .HasColumnName("AddressID");
@@ -78,21 +73,15 @@ public partial class AdventureWorksLt2019Context : DbContext
             entity.Property(e => e.City)
                 .HasMaxLength(30)
                 .HasComment("Name of the city.");
-            entity.Property(e => e.CountryRegion).HasMaxLength(50);
             entity.Property(e => e.ModifiedDate)
-                .HasDefaultValueSql("(getdate())")
                 .HasComment("Date and time the record was last updated.")
                 .HasColumnType("datetime");
             entity.Property(e => e.PostalCode)
                 .HasMaxLength(15)
                 .HasComment("Postal code for the street address.");
             entity.Property(e => e.Rowguid)
-                .HasDefaultValueSql("(newid())")
                 .HasComment("ROWGUIDCOL number uniquely identifying the record. Used to support a merge replication sample.")
                 .HasColumnName("rowguid");
-            entity.Property(e => e.StateProvince)
-                .HasMaxLength(50)
-                .HasComment("Name of state or province.");
         });
 
         modelBuilder.Entity<BuildVersion>(entity =>
@@ -106,7 +95,6 @@ public partial class AdventureWorksLt2019Context : DbContext
                 .HasComment("Version number of the database in 9.yy.mm.dd.00 format.")
                 .HasColumnName("Database Version");
             entity.Property(e => e.ModifiedDate)
-                .HasDefaultValueSql("(getdate())")
                 .HasComment("Date and time the record was last updated.")
                 .HasColumnType("datetime");
             entity.Property(e => e.SystemInformationId)
@@ -137,20 +125,9 @@ public partial class AdventureWorksLt2019Context : DbContext
             entity.Property(e => e.EmailAddress)
                 .HasMaxLength(50)
                 .HasComment("E-mail address for the person.");
-            entity.Property(e => e.FirstName)
-                .HasMaxLength(50)
-                .HasComment("First name of the person.");
-            entity.Property(e => e.LastName)
-                .HasMaxLength(50)
-                .HasComment("Last name of the person.");
-            entity.Property(e => e.MiddleName)
-                .HasMaxLength(50)
-                .HasComment("Middle name or middle initial of the person.");
             entity.Property(e => e.ModifiedDate)
-                .HasDefaultValueSql("(getdate())")
                 .HasComment("Date and time the record was last updated.")
                 .HasColumnType("datetime");
-            entity.Property(e => e.NameStyle).HasComment("0 = The data in FirstName and LastName are stored in western style (first name, last name) order.  1 = Eastern style (last name, first name) order.");
             entity.Property(e => e.PasswordHash)
                 .HasMaxLength(128)
                 .IsUnicode(false)
@@ -159,11 +136,7 @@ public partial class AdventureWorksLt2019Context : DbContext
                 .HasMaxLength(10)
                 .IsUnicode(false)
                 .HasComment("Random value concatenated with the password string before the password is hashed.");
-            entity.Property(e => e.Phone)
-                .HasMaxLength(25)
-                .HasComment("Phone number associated with the person.");
             entity.Property(e => e.Rowguid)
-                .HasDefaultValueSql("(newid())")
                 .HasComment("ROWGUIDCOL number uniquely identifying the record. Used to support a merge replication sample.")
                 .HasColumnName("rowguid");
             entity.Property(e => e.SalesPerson)
@@ -191,15 +164,10 @@ public partial class AdventureWorksLt2019Context : DbContext
             entity.Property(e => e.AddressId)
                 .HasComment("Primary key. Foreign key to Address.AddressID.")
                 .HasColumnName("AddressID");
-            entity.Property(e => e.AddressType)
-                .HasMaxLength(50)
-                .HasComment("The kind of Address. One of: Archive, Billing, Home, Main Office, Primary, Shipping");
             entity.Property(e => e.ModifiedDate)
-                .HasDefaultValueSql("(getdate())")
                 .HasComment("Date and time the record was last updated.")
                 .HasColumnType("datetime");
             entity.Property(e => e.Rowguid)
-                .HasDefaultValueSql("(newid())")
                 .HasComment("ROWGUIDCOL number uniquely identifying the record. Used to support a merge replication sample.")
                 .HasColumnName("rowguid");
 
@@ -232,7 +200,6 @@ public partial class AdventureWorksLt2019Context : DbContext
             entity.Property(e => e.ErrorSeverity).HasComment("The severity of the error that occurred.");
             entity.Property(e => e.ErrorState).HasComment("The state number of the error that occurred.");
             entity.Property(e => e.ErrorTime)
-                .HasDefaultValueSql("(getdate())")
                 .HasComment("The date and time at which the error occurred.")
                 .HasColumnType("datetime");
             entity.Property(e => e.UserName)
@@ -245,8 +212,6 @@ public partial class AdventureWorksLt2019Context : DbContext
             entity.HasKey(e => e.ProductId).HasName("PK_Product_ProductID");
 
             entity.ToTable("Product", "SalesLT", tb => tb.HasComment("Products sold or used in the manfacturing of sold products."));
-
-            entity.HasIndex(e => e.Name, "AK_Product_Name").IsUnique();
 
             entity.HasIndex(e => e.ProductNumber, "AK_Product_ProductNumber").IsUnique();
 
@@ -265,12 +230,8 @@ public partial class AdventureWorksLt2019Context : DbContext
                 .HasComment("Selling price.")
                 .HasColumnType("money");
             entity.Property(e => e.ModifiedDate)
-                .HasDefaultValueSql("(getdate())")
                 .HasComment("Date and time the record was last updated.")
                 .HasColumnType("datetime");
-            entity.Property(e => e.Name)
-                .HasMaxLength(50)
-                .HasComment("Name of the product.");
             entity.Property(e => e.ProductCategoryId)
                 .HasComment("Product is a member of this product category. Foreign key to ProductCategory.ProductCategoryID. ")
                 .HasColumnName("ProductCategoryID");
@@ -281,7 +242,6 @@ public partial class AdventureWorksLt2019Context : DbContext
                 .HasMaxLength(25)
                 .HasComment("Unique product identification number.");
             entity.Property(e => e.Rowguid)
-                .HasDefaultValueSql("(newid())")
                 .HasComment("ROWGUIDCOL number uniquely identifying the record. Used to support a merge replication sample.")
                 .HasColumnName("rowguid");
             entity.Property(e => e.SellEndDate)
@@ -315,25 +275,18 @@ public partial class AdventureWorksLt2019Context : DbContext
 
             entity.ToTable("ProductCategory", "SalesLT", tb => tb.HasComment("High-level product categorization."));
 
-            entity.HasIndex(e => e.Name, "AK_ProductCategory_Name").IsUnique();
-
             entity.HasIndex(e => e.Rowguid, "AK_ProductCategory_rowguid").IsUnique();
 
             entity.Property(e => e.ProductCategoryId)
                 .HasComment("Primary key for ProductCategory records.")
                 .HasColumnName("ProductCategoryID");
             entity.Property(e => e.ModifiedDate)
-                .HasDefaultValueSql("(getdate())")
                 .HasComment("Date and time the record was last updated.")
                 .HasColumnType("datetime");
-            entity.Property(e => e.Name)
-                .HasMaxLength(50)
-                .HasComment("Category description.");
             entity.Property(e => e.ParentProductCategoryId)
                 .HasComment("Product category identification number of immediate ancestor category. Foreign key to ProductCategory.ProductCategoryID.")
                 .HasColumnName("ParentProductCategoryID");
             entity.Property(e => e.Rowguid)
-                .HasDefaultValueSql("(newid())")
                 .HasComment("ROWGUIDCOL number uniquely identifying the record. Used to support a merge replication sample.")
                 .HasColumnName("rowguid");
 
@@ -357,11 +310,9 @@ public partial class AdventureWorksLt2019Context : DbContext
                 .HasMaxLength(400)
                 .HasComment("Description of the product.");
             entity.Property(e => e.ModifiedDate)
-                .HasDefaultValueSql("(getdate())")
                 .HasComment("Date and time the record was last updated.")
                 .HasColumnType("datetime");
             entity.Property(e => e.Rowguid)
-                .HasDefaultValueSql("(newid())")
                 .HasComment("ROWGUIDCOL number uniquely identifying the record. Used to support a merge replication sample.")
                 .HasColumnName("rowguid");
         });
@@ -372,21 +323,14 @@ public partial class AdventureWorksLt2019Context : DbContext
 
             entity.ToTable("ProductModel", "SalesLT");
 
-            entity.HasIndex(e => e.Name, "AK_ProductModel_Name").IsUnique();
-
             entity.HasIndex(e => e.Rowguid, "AK_ProductModel_rowguid").IsUnique();
 
             entity.HasIndex(e => e.CatalogDescription, "PXML_ProductModel_CatalogDescription");
 
             entity.Property(e => e.ProductModelId).HasColumnName("ProductModelID");
             entity.Property(e => e.CatalogDescription).HasColumnType("xml");
-            entity.Property(e => e.ModifiedDate)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.Name).HasMaxLength(50);
-            entity.Property(e => e.Rowguid)
-                .HasDefaultValueSql("(newid())")
-                .HasColumnName("rowguid");
+            entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+            entity.Property(e => e.Rowguid).HasColumnName("rowguid");
         });
 
         modelBuilder.Entity<ProductModelProductDescription>(entity =>
@@ -408,12 +352,9 @@ public partial class AdventureWorksLt2019Context : DbContext
                 .IsFixedLength()
                 .HasComment("The culture for which the description is written");
             entity.Property(e => e.ModifiedDate)
-                .HasDefaultValueSql("(getdate())")
                 .HasComment("Date and time the record was last updated.")
                 .HasColumnType("datetime");
-            entity.Property(e => e.Rowguid)
-                .HasDefaultValueSql("(newid())")
-                .HasColumnName("rowguid");
+            entity.Property(e => e.Rowguid).HasColumnName("rowguid");
 
             entity.HasOne(d => d.ProductDescription).WithMany(p => p.ProductModelProductDescriptions)
                 .HasForeignKey(d => d.ProductDescriptionId)
@@ -446,11 +387,9 @@ public partial class AdventureWorksLt2019Context : DbContext
                 .HasComment("Primary key. One incremental unique number per product sold.")
                 .HasColumnName("SalesOrderDetailID");
             entity.Property(e => e.LineTotal)
-                .HasComputedColumnSql("(isnull(([UnitPrice]*((1.0)-[UnitPriceDiscount]))*[OrderQty],(0.0)))", false)
                 .HasComment("Per product subtotal. Computed as UnitPrice * (1 - UnitPriceDiscount) * OrderQty.")
                 .HasColumnType("numeric(38, 6)");
             entity.Property(e => e.ModifiedDate)
-                .HasDefaultValueSql("(getdate())")
                 .HasComment("Date and time the record was last updated.")
                 .HasColumnType("datetime");
             entity.Property(e => e.OrderQty).HasComment("Quantity ordered per product.");
@@ -458,7 +397,6 @@ public partial class AdventureWorksLt2019Context : DbContext
                 .HasComment("Product sold to customer. Foreign key to Product.ProductID.")
                 .HasColumnName("ProductID");
             entity.Property(e => e.Rowguid)
-                .HasDefaultValueSql("(newid())")
                 .HasComment("ROWGUIDCOL number uniquely identifying the record. Used to support a merge replication sample.")
                 .HasColumnName("rowguid");
             entity.Property(e => e.UnitPrice)
@@ -494,9 +432,6 @@ public partial class AdventureWorksLt2019Context : DbContext
             entity.Property(e => e.SalesOrderId)
                 .HasComment("Primary key.")
                 .HasColumnName("SalesOrderID");
-            entity.Property(e => e.AccountNumber)
-                .HasMaxLength(15)
-                .HasComment("Financial accounting number reference.");
             entity.Property(e => e.BillToAddressId)
                 .HasComment("The ID of the location to send invoices.  Foreign key to the Address table.")
                 .HasColumnName("BillToAddressID");
@@ -515,27 +450,17 @@ public partial class AdventureWorksLt2019Context : DbContext
                 .HasComment("Shipping cost.")
                 .HasColumnType("money");
             entity.Property(e => e.ModifiedDate)
-                .HasDefaultValueSql("(getdate())")
                 .HasComment("Date and time the record was last updated.")
                 .HasColumnType("datetime");
-            entity.Property(e => e.OnlineOrderFlag)
-                .HasDefaultValue(true)
-                .HasComment("0 = Order placed by sales person. 1 = Order placed online by customer.");
             entity.Property(e => e.OrderDate)
-                .HasDefaultValueSql("(getdate())")
                 .HasComment("Dates the sales order was created.")
                 .HasColumnType("datetime");
-            entity.Property(e => e.PurchaseOrderNumber)
-                .HasMaxLength(25)
-                .HasComment("Customer purchase order number reference. ");
             entity.Property(e => e.RevisionNumber).HasComment("Incremental number to track changes to the sales order over time.");
             entity.Property(e => e.Rowguid)
-                .HasDefaultValueSql("(newid())")
                 .HasComment("ROWGUIDCOL number uniquely identifying the record. Used to support a merge replication sample.")
                 .HasColumnName("rowguid");
             entity.Property(e => e.SalesOrderNumber)
                 .HasMaxLength(25)
-                .HasComputedColumnSql("(isnull(N'SO'+CONVERT([nvarchar](23),[SalesOrderID]),N'*** ERROR ***'))", false)
                 .HasComment("Unique sales order identification number.");
             entity.Property(e => e.ShipDate)
                 .HasComment("Date the order was shipped to the customer.")
@@ -546,9 +471,7 @@ public partial class AdventureWorksLt2019Context : DbContext
             entity.Property(e => e.ShipToAddressId)
                 .HasComment("The ID of the location to send goods.  Foreign key to the Address table.")
                 .HasColumnName("ShipToAddressID");
-            entity.Property(e => e.Status)
-                .HasDefaultValue((byte)1)
-                .HasComment("Order current status. 1 = In process; 2 = Approved; 3 = Backordered; 4 = Rejected; 5 = Shipped; 6 = Cancelled");
+            entity.Property(e => e.Status).HasComment("Order current status. 1 = In process; 2 = Approved; 3 = Backordered; 4 = Rejected; 5 = Shipped; 6 = Cancelled");
             entity.Property(e => e.SubTotal)
                 .HasComment("Sales subtotal. Computed as SUM(SalesOrderDetail.LineTotal)for the appropriate SalesOrderID.")
                 .HasColumnType("money");
@@ -556,7 +479,6 @@ public partial class AdventureWorksLt2019Context : DbContext
                 .HasComment("Tax amount.")
                 .HasColumnType("money");
             entity.Property(e => e.TotalDue)
-                .HasComputedColumnSql("(isnull(([SubTotal]+[TaxAmt])+[Freight],(0)))", false)
                 .HasComment("Total due from customer. Computed as Subtotal + TaxAmt + Freight.")
                 .HasColumnType("money");
 
@@ -579,9 +501,7 @@ public partial class AdventureWorksLt2019Context : DbContext
                 .HasNoKey()
                 .ToView("vGetAllCategories", "SalesLT");
 
-            entity.Property(e => e.ParentProductCategoryName).HasMaxLength(50);
             entity.Property(e => e.ProductCategoryId).HasColumnName("ProductCategoryID");
-            entity.Property(e => e.ProductCategoryName).HasMaxLength(50);
         });
 
         modelBuilder.Entity<VProductAndDescription>(entity =>
@@ -594,9 +514,7 @@ public partial class AdventureWorksLt2019Context : DbContext
                 .HasMaxLength(6)
                 .IsFixedLength();
             entity.Property(e => e.Description).HasMaxLength(400);
-            entity.Property(e => e.Name).HasMaxLength(50);
             entity.Property(e => e.ProductId).HasColumnName("ProductID");
-            entity.Property(e => e.ProductModel).HasMaxLength(50);
         });
 
         modelBuilder.Entity<VProductModelCatalogDescription>(entity =>
@@ -611,7 +529,6 @@ public partial class AdventureWorksLt2019Context : DbContext
             entity.Property(e => e.MaintenanceDescription).HasMaxLength(256);
             entity.Property(e => e.Material).HasMaxLength(256);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
-            entity.Property(e => e.Name).HasMaxLength(50);
             entity.Property(e => e.NoOfYears).HasMaxLength(256);
             entity.Property(e => e.Pedal).HasMaxLength(256);
             entity.Property(e => e.PictureAngle).HasMaxLength(256);

@@ -1,4 +1,4 @@
-﻿using Jacmazon_ECommerce.Models;
+﻿using Jacmazon_ECommerce.Data;
 using System.Configuration;
 
 namespace Jacmazon_ECommerce.Extensions
@@ -24,7 +24,7 @@ namespace Jacmazon_ECommerce.Extensions
 
     public class PagedResult<T> : PagedResultBase where T : class
     {
-        protected readonly AdventureWorksLt2019Context _context;
+        protected readonly AdventureWorksLt2016Context _context;
         protected readonly IConfiguration _configuration;
 
         private IList<T>? results_;
@@ -44,7 +44,7 @@ namespace Jacmazon_ECommerce.Extensions
             }
         }
 
-        public PagedResult(AdventureWorksLt2019Context context, IConfiguration configuration)
+        public PagedResult(AdventureWorksLt2016Context context, IConfiguration configuration)
         {
             _context = context;
             _configuration = configuration;

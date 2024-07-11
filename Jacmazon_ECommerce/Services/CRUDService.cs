@@ -1,5 +1,5 @@
 ﻿using Jacmazon_ECommerce.Interfaces;
-using Jacmazon_ECommerce.Models;
+using Jacmazon_ECommerce.Data;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Protocol.Core.Types;
 
@@ -8,9 +8,9 @@ namespace Jacmazon_ECommerce.Services
     public class CRUDService<T> : ICRUDService<T> where T : class
     {
         protected readonly ICRUDRepository<T> cRUD;
-        protected readonly AdventureWorksLt2019Context _context;
+        protected readonly AdventureWorksLt2016Context _context;
 
-        public CRUDService(ICRUDRepository<T> cRUD, AdventureWorksLt2019Context context)
+        public CRUDService(ICRUDRepository<T> cRUD, AdventureWorksLt2016Context context)
         {
             this.cRUD = cRUD;
             _context = context;

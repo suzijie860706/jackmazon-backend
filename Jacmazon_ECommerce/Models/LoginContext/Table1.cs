@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Jacmazon_ECommerce.Models;
+namespace Jacmazon_ECommerce.Models.LoginContext;
 
-public partial class DbUser
+public partial class Table1
 {
     public int Id { get; set; }
 
