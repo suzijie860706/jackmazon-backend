@@ -382,9 +382,9 @@ namespace Jacmazon_ECommerce.Controllers
         /// <param name="refreshToken"></param>
         /// <returns></returns>
         [HttpPost("phone")]
-        public async Task<IActionResult> Phone([FromBody] string userPhone)
+        public async Task<IActionResult> Phone([FromBody] string phone)
         {
-            if (userPhone == null || !ModelState.IsValid)
+            if (string.IsNullOrEmpty(phone))
             {
                 return Ok(new Response<string>
                 {
@@ -395,7 +395,19 @@ namespace Jacmazon_ECommerce.Controllers
                 });
             }
 
-            User? userLogin = await _loginContext.Users.FirstOrDefaultAsync(u => u.Email == userPhone);
+            //格式驗證
+            if(!Regex.IsMatch(phone, @"^09[0-9]{8}$"))
+            {
+                return Ok(new Response<string>
+                {
+                    Success = false,
+                    Status = StatusCodes.Status400BadRequest,
+                    Message = "格式錯誤",
+                    Data = ""
+                });
+            }
+
+            User? userLogin = await _loginContext.Users.FirstOrDefaultAsync(u => u.Email == phone);
             if (userLogin != null)
             {
                 return Ok(new Response<string>
