@@ -1,20 +1,14 @@
-﻿using Microsoft.VisualBasic;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace Jacmazon_ECommerce.Models.LoginContext;
 
 public partial class User
 {
-    [Key]
-    [JsonIgnore]
     public int Id { get; set; }
 
-    /// <summary>帳號</summary>
     public string Account { get; set; } = null!;
-    
+
     public string Password { get; set; } = null!;
 
     public string Name { get; set; } = null!;
@@ -23,6 +17,11 @@ public partial class User
 
     public bool Approved { get; set; }
 
-    [Required]
-    public DateAndTime createDate { get; set; }
+    public string? Phone { get; set; }
+
+    public string? Email { get; set; }
+
+    public DateTime UpdateDate { get; set; }
+
+    public DateTime CreateDate { get; set; }
 }

@@ -7,10 +7,6 @@ namespace Jacmazon_ECommerce.Data;
 
 public partial class LoginContext : DbContext
 {
-    public LoginContext()
-    {
-    }
-
     public LoginContext(DbContextOptions<LoginContext> options)
         : base(options)
     {
@@ -21,9 +17,6 @@ public partial class LoginContext : DbContext
     public virtual DbSet<Token> Tokens { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -67,12 +60,15 @@ public partial class LoginContext : DbContext
             entity.Property(e => e.Account)
                 .HasMaxLength(20)
                 .IsUnicode(false);
+            entity.Property(e => e.CreateDate).HasColumnType("datetime");
             entity.Property(e => e.Name)
                 .HasMaxLength(20)
                 .IsUnicode(false);
             entity.Property(e => e.Password)
                 .HasMaxLength(256)
                 .IsUnicode(false);
+            entity.Property(e => e.Phone).HasMaxLength(20);
+            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
         });
 
         OnModelCreatingPartial(modelBuilder);
