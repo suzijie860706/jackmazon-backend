@@ -26,11 +26,12 @@ namespace Jacmazon_ECommerce.Controllers
         private readonly ILogger<WebAPIController> _logger;
 
         private readonly IAntiforgery _antiforgery;
-        public WebAPIController(AdventureWorksLt2016Context context, IAntiforgery antiforgery, ILogger<WebAPIController> logger)
+        public WebAPIController(AdventureWorksLt2016Context context, IAntiforgery antiforgery, LoginContext loginContext,
+            ILogger<WebAPIController> logger)
         {
             _context = context;
             _antiforgery = antiforgery;
-
+            _loginContext = loginContext;
             _logger = logger;
         }
 

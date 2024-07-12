@@ -16,8 +16,6 @@ public partial class LoginContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-    public virtual DbSet<Users2> Users2s { get; set; }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Token>(entity =>
@@ -58,24 +56,6 @@ public partial class LoginContext : DbContext
             entity.Property(e => e.UpdateDate)
                 .HasComment("更新日期")
                 .HasColumnType("datetime");
-        });
-
-        modelBuilder.Entity<Users2>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK_db_user2");
-
-            entity.ToTable("Users2");
-
-            entity.Property(e => e.Id).HasColumnName("ID");
-            entity.Property(e => e.CreateDate).HasColumnType("datetime");
-            entity.Property(e => e.Name)
-                .HasMaxLength(20)
-                .IsUnicode(false);
-            entity.Property(e => e.Password)
-                .HasMaxLength(256)
-                .IsUnicode(false);
-            entity.Property(e => e.Phone).HasMaxLength(20);
-            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
         });
 
         OnModelCreatingPartial(modelBuilder);
