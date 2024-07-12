@@ -1,6 +1,8 @@
 ﻿using Jacmazon_ECommerce.Data;
+using Jacmazon_ECommerce.Models;
 using Microsoft.AspNetCore.Antiforgery;
 using System.Diagnostics;
+using System.Text.Json;
 
 namespace Jacmazon_ECommerce.Ｍiddlewares
 {
@@ -20,33 +22,24 @@ namespace Jacmazon_ECommerce.Ｍiddlewares
             try
             {
                 await _next(context);
-
-                if (context.Response.StatusCode == StatusCodes.Status500InternalServerError)
-                {
-                    //var errorMessage = "An internal server error occurred.";
-                    //_logger.LogError($"HTTP STATUS CODE: {context.Response.StatusCode}, Message: {errorMessage}");
-                }
             }
             catch (Exception ex)
             {
-                // 捕获异常，记录错误日志
-                logger.LogError(ex, $"HTTP狀態碼：{context.Response.StatusCode} /n" +
-                    $"錯誤訊息：{ex.Message}");
-                //await HandleExceptionAsync(context, ex);
+                // 紀錄logger
+                Type exceptionType = ex.GetType();
+                logger.LogError(ex, $"應用程式內部錯誤。錯誤類型：{exceptionType.Name} \n" +
+                    $"錯誤訊息：{ex}");
+                
+                var response = new Response<string>
+                {
+                    Success = false,
+                    Status = StatusCodes.Status500InternalServerError,
+                    Message = ex.Message,
+                    Data = ""
+                };
+
+                await context.Response.WriteAsync(JsonSerializer.Serialize(response));
             }
-
-
-
-            if (context.Response.StatusCode == StatusCodes.Status500InternalServerError)
-            {
-                //logger.LogInformation("This is an information message.");
-                //logger.LogWarning("This is a warning message.");
-                //logger.LogError("HTTP STATUS CODE:" + context.Response.StatusCode);
-            }
-
-
-            // 在這裡處理請求後的邏輯
-            //Debug.WriteLine($"Response: {context.Response.StatusCode}");
         }
     }
 }

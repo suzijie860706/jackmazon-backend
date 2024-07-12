@@ -174,13 +174,11 @@ var app = builder.Build();
 
 
 #region 自定義Middleware
-//Logger
-app.UseLogger();
-
-
 // 自定義JTW [Authorize] 未通過時Response
 app.UseCustomAuthorization();
 
+//Logger
+app.UseLogger();
 #endregion
 
 // Configure the HTTP request pipeline.
