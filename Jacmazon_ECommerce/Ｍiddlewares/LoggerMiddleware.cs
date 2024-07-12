@@ -30,7 +30,8 @@ namespace Jacmazon_ECommerce.Ｍiddlewares
             catch (Exception ex)
             {
                 // 捕获异常，记录错误日志
-                logger.LogError(ex, $"An unhandled exception occurred: {ex.Message}");
+                logger.LogError(ex, $"HTTP狀態碼：{context.Response.StatusCode} /n" +
+                    $"錯誤訊息：{ex.Message}");
                 //await HandleExceptionAsync(context, ex);
             }
 
