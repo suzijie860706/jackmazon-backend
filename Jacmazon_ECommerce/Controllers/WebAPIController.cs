@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pag
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Jacmazon_ECommerce.Ｍiddlewares;
 
 namespace Jacmazon_ECommerce.Controllers
 {
@@ -22,13 +23,34 @@ namespace Jacmazon_ECommerce.Controllers
     {
         private readonly AdventureWorksLt2016Context _context;
         private readonly LoginContext _loginContext;
+        private readonly ILogger<WebAPIController> _logger;
 
         private readonly IAntiforgery _antiforgery;
-        public WebAPIController(AdventureWorksLt2016Context context, IAntiforgery antiforgery, LoginContext loginContext)
+        public WebAPIController(AdventureWorksLt2016Context context, IAntiforgery antiforgery, ILogger<WebAPIController> logger)
         {
             _context = context;
             _antiforgery = antiforgery;
-            _loginContext = loginContext;
+
+            _logger = logger;
+        }
+
+        /// <summary>
+        /// 取得Lgg-----temperary
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("GetLogs")]
+        public IActionResult GetLogs()
+        {
+            var d = Directory.GetCurrentDirectory();
+            string filePath = Path.Combine(d, $"Serilogs/log-{DateTime.Now.ToString("yyyyMMdd")}.txt");
+
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound("Log file not found.");
+            }
+
+            var logs = System.IO.File.ReadAllLines(filePath);
+            return Ok(logs);
         }
 
         /// <summary>

@@ -11,5 +11,10 @@
         {
             return builder.UseMiddleware<CustomAuthorizationMiddleware>();
         }
+        
+        public static IApplicationBuilder UseLogger(this IApplicationBuilder builder)
+        {
+            return builder.UseMiddleware<LoggerMiddleware>();
+        }
     }
 }

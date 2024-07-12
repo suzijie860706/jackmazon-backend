@@ -15,9 +15,25 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using Serilog;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//從 appsettings.json 讀取設定資料
+var configuration = new ConfigurationBuilder()
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile(path: "appsettings.json", optional: false, reloadOnChange: true)
+        .Build();
+
+//使用從 appsettings.json 讀取到的內容來設定 logger
+Log.Logger = new LoggerConfiguration()
+            .ReadFrom.Configuration(configuration)
+.CreateLogger();
+
+// 將 Serilog 註冊為日誌記錄提供程序
+builder.Host.UseSerilog();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -155,11 +171,17 @@ builder.Services.AddSwaggerGen(options =>
 var app = builder.Build();
 
 //antiforgeryToken
-//將其寫在api上取得即可
-//app.UseRequestLogging();
+
+
+#region 自定義Middleware
+//Logger
+app.UseLogger();
+
 
 // 自定義JTW [Authorize] 未通過時Response
 app.UseCustomAuthorization();
+
+#endregion
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
