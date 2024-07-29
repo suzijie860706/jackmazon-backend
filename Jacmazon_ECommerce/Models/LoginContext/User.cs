@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Jacmazon_ECommerce.Models.LoginContext;
+﻿namespace Jacmazon_ECommerce.Models.LoginContext;
 
 public partial class User
 {

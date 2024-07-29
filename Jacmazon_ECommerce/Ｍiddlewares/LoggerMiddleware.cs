@@ -1,7 +1,9 @@
 ﻿using Jacmazon_ECommerce.Data;
 using Jacmazon_ECommerce.Models;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.Diagnostics;
+using System.Net;
 using System.Text.Json;
 
 namespace Jacmazon_ECommerce.Ｍiddlewares
@@ -14,7 +16,7 @@ namespace Jacmazon_ECommerce.Ｍiddlewares
             _next = next;
         }
 
-        public async Task InvokeAsync(HttpContext context, LoginContext loginContext,ILogger<LoggerMiddleware> logger)
+        public async Task InvokeAsync(HttpContext context)
         {
             // 在這裡處理請求前的邏輯
             //Debug.WriteLine($"Request: {context.Request.Method} {context.Request.Path}");
@@ -23,22 +25,19 @@ namespace Jacmazon_ECommerce.Ｍiddlewares
             {
                 await _next(context);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // 紀錄logger
-                Type exceptionType = ex.GetType();
-                logger.LogError(ex, $"應用程式內部錯誤。錯誤類型：{exceptionType.Name} \n" +
-                    $"錯誤訊息：{ex}");
-                
                 var response = new Response<string>
                 {
                     Success = false,
                     Status = StatusCodes.Status500InternalServerError,
-                    Message = ex.Message,
-                    Data = ""
+                    Message = "伺服器發生錯誤，請稍後再試",
                 };
 
+                context.Response.StatusCode = (int)HttpStatusCode.OK;
+                context.Response.ContentType = "application/json";   //add this line.....
                 await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+                return;
             }
         }
     }

@@ -1,12 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-/// <summary>
-/// partial Token
-/// </summary>
+namespace Jacmazon_ECommerce.Models.LoginContext;
+
+[ModelMetadataType(typeof(TokenMetaData))]
 public partial class Token
+{
+}
+
+public class TokenMetaData
 {
     [Key]
     [JsonIgnore]

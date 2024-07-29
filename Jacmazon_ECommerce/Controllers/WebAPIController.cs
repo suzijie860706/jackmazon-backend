@@ -1,19 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+using System.Globalization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Antiforgery;
 using Jacmazon_ECommerce.Data;
 using Jacmazon_ECommerce.Models;
+using Jacmazon_ECommerce.Services;
 using Jacmazon_ECommerce.Models.LoginContext;
-using Jacmazon_ECommerce.Models.AdventureWorksLT2016Context;
-using Microsoft.EntityFrameworkCore;
-using Jacmazon_ECommerce.JWTServices;
-using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Antiforgery;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
-using System.Globalization;
-using System.Text.RegularExpressions;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Jacmazon_ECommerce.Ｍiddlewares;
+using Jacmazon_ECommerce.DTOs;
+using Jacmazon_ECommerce.Extensions;
 
 namespace Jacmazon_ECommerce.Controllers
 {
@@ -21,18 +17,20 @@ namespace Jacmazon_ECommerce.Controllers
     [ApiController]
     public class WebAPIController : ControllerBase
     {
-        private readonly AdventureWorksLt2016Context _context;
-        private readonly LoginContext _loginContext;
         private readonly ILogger<WebAPIController> _logger;
-
         private readonly IAntiforgery _antiforgery;
-        public WebAPIController(AdventureWorksLt2016Context context, IAntiforgery antiforgery, LoginContext loginContext,
-            ILogger<WebAPIController> logger)
+        private readonly IUserService _userService;
+        private readonly ITokenService _tokenService;
+        private readonly IProductService _productService;
+
+        public WebAPIController(IAntiforgery antiforgery, ILogger<WebAPIController> logger, IUserService userService,
+            ITokenService tokenService, IProductService productService)
         {
-            _context = context;
             _antiforgery = antiforgery;
-            _loginContext = loginContext;
             _logger = logger;
+            _userService = userService;
+            _tokenService = tokenService;
+            _productService = productService;
         }
 
         /// <summary>
@@ -40,7 +38,7 @@ namespace Jacmazon_ECommerce.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("GetLogs")]
-        public IActionResult GetLogs()
+        public async Task<IActionResult> GetLogs()
         {
             var d = Directory.GetCurrentDirectory();
             string filePath = Path.Combine(d, $"Serilogs/log-{DateTime.Now.ToString("yyyyMMdd")}.txt");
@@ -59,7 +57,7 @@ namespace Jacmazon_ECommerce.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("antiForgery")]
-        public IActionResult GetAntiforgeryToken()
+        public async Task<IActionResult> GetAntiforgeryToken()
         {
             var tokens = _antiforgery.GetAndStoreTokens(HttpContext);
             Response.Cookies.Append("XSRF-TOKEN", tokens.RequestToken!,
@@ -75,54 +73,43 @@ namespace Jacmazon_ECommerce.Controllers
         /// <returns></returns>
         [HttpPost("Login")]
         //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login([FromBody] User user)
+        public async Task<IActionResult> Login([FromBody] UserRegisterDto user)
         {
-            if (string.IsNullOrEmpty(user.Email) || string.IsNullOrEmpty(user.Password) || !ModelState.IsValid)
+            _logger.LogInformation("{Controller}/{Action} Start",
+                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
+            try
             {
-                return Ok(new Response<string>
+                // 驗證帳密
+                bool isValidUser = await _userService.VerifyUserLogin(user.Email, user.Password);
+                if (!isValidUser)
                 {
-                    Success = false,
-                    Status = StatusCodes.Status400BadRequest,
-                    Message = "驗證錯誤",
-                    Data = ""
+                    return Ok(new Response<string>
+                    {
+                        Success = false,
+                        Status = StatusCodes.Status401Unauthorized,
+                        Message = "帳號或密碼錯誤",
+                    });
+                }
+
+                //建立Token
+                TokenResponseDto token1 = await _tokenService.CreateTokenAsync(user.Email);
+
+                _logger.LogInformation("{Controller}/{Action} End",
+                    ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
+
+                return Ok(new Response<TokenResponseDto>
+                {
+                    Success = true,
+                    Status = StatusCodes.Status200OK,
+                    Data = token1
                 });
             }
-
-            User? userLogin = await _loginContext.Users.FirstOrDefaultAsync(u => u.Email == user.Email && u.Password == user.Password);
-
-            //驗證帳密
-            if (userLogin == null)
+            catch (Exception ex)
             {
-                return Ok(new Response<string>
-                {
-                    Success = false,
-                    Status = StatusCodes.Status401Unauthorized,
-                    Message = "帳號或密碼錯誤",
-                    Data = ""
-                });
+                _logger.LogError(ex, "{Controller}/{Action} Fail",
+                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
+                throw;
             }
-
-            string accessToken = TokenServices.CreateAccessToken(user);
-            string refreshToken = TokenServices.CreateRefreshToken(user);
-
-            //新增至資料庫
-            _loginContext.Tokens.Add(new Token
-            {
-                RefreshToken = refreshToken,
-                ExpiredDate = Settings.Refresh_Expired_Date(),
-                CreatedDate = DateTime.Now,
-                UpdatedDate = DateTime.Now
-            });
-            _loginContext.SaveChanges();
-
-            var token = new { AccessToken = accessToken, RefreshToken = refreshToken };
-            return Ok(new Response<object>
-            {
-                Success = true,
-                Status = StatusCodes.Status200OK,
-                Message = "",
-                Data = token
-            });
         }
 
         /// <summary>
@@ -132,46 +119,44 @@ namespace Jacmazon_ECommerce.Controllers
         /// <returns></returns>
         [HttpPost("CreateAccount")]
         //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateAccount([FromBody] User user)
+        public async Task<IActionResult> CreateAccount([FromBody] UserRegisterDto user)
         {
-            if (string.IsNullOrEmpty(user.Email) || string.IsNullOrEmpty(user.Password) || !ModelState.IsValid) { return Content("驗證錯誤"); }
+            _logger.LogInformation("{Controller}/{Action} Start",
+                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
 
-            List<User> t = _loginContext.Users.ToList();
-            User? userLogin = await _loginContext.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
-            //驗證帳密
-            if (userLogin != null && userLogin.Email == user.Email)
+            try
             {
+                //驗證Email
+                bool isEmailRegistered = await _userService.IsEmailRegisteredAsync(user.Email);
+                if (isEmailRegistered)
+                {
+                    return Ok(new Response<string>
+                    {
+                        Success = false,
+                        Status = StatusCodes.Status401Unauthorized,
+                        Message = "帳號已建立",
+                    });
+                }
+
+                User user1 = Mapper.Trans<UserRegisterDto, User>(user);
+                await _userService.CreateUserAsync(user1);
+
+                _logger.LogInformation("{Controller}/{Action} End",
+                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
+
                 return Ok(new Response<string>
                 {
-                    Success = false,
-                    Status = StatusCodes.Status401Unauthorized,
-                    Message = "帳號已建立",
-                    Data = ""
+                    Success = true,
+                    Status = StatusCodes.Status200OK,
                 });
             }
-
-            User newUser = new()
+            catch (Exception ex)
             {
-                Email = user.Email,
-                Password = user.Password,
-                Name = user.Name ?? "",
-                Rank = 0,
-                Approved = true,
-                Phone = user.Phone,
-                CreateDate = DateTime.Now,
-                UpdateDate = DateTime.Now
-            };
+                _logger.LogError(ex, "{Controller}/{Action} Fail",
+                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
+                throw;
+            }
 
-            await _loginContext.Users.AddAsync(newUser);
-            await _loginContext.SaveChangesAsync();
-
-            return Ok(new Response<string>
-            {
-                Success = true,
-                Status = StatusCodes.Status200OK,
-                Message = "",
-                Data = ""
-            });
 
         }
 
@@ -181,22 +166,31 @@ namespace Jacmazon_ECommerce.Controllers
         /// <returns></returns>
         [HttpGet("ProductList")]
         [Authorize]
-        public IActionResult ProductList()
+        public async Task<IActionResult> ProductList()
         {
+            _logger.LogInformation("{Controller}/{Action} Start",
+                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
+
             try
             {
-                List<Product> products = _context.Products.ToList();
-                return Ok(new Response<List<Product>>
+                IEnumerable<ProductResponseDto> productResponseDtos = await _productService.GetAllProducts();
+
+                _logger.LogInformation("{Controller}/{Action} End",
+                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
+
+                return Ok(new Response<IEnumerable<ProductResponseDto>>
                 {
                     Success = true,
                     Status = StatusCodes.Status200OK,
-                    Message = "",
-                    Data = products
+                    Data = productResponseDtos
                 });
+
             }
             catch (Exception ex)
             {
-                return Ok(ex);
+                _logger.LogError(ex, "{Controller}/{Action} Fail",
+                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
+                throw;
             }
 
         }
@@ -208,54 +202,24 @@ namespace Jacmazon_ECommerce.Controllers
         [HttpPost("Refresh_Token")]
         public async Task<IActionResult> Refresh_Token([FromBody] string refreshToken)
         {
-            Token? dbToken = await _loginContext.Tokens.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
-
-            //Refresh Token不存在
-            if (dbToken == null)
+            try
             {
-                return Ok(new Response<string>
-                {
-                    Success = false,
-                    Status = StatusCodes.Status401Unauthorized,
-                    Message = "Refresh_Token not found",
-                    Data = ""
-                });
+                _logger.LogInformation("{Controller}/{Action} Start",
+                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
+
+                Response<string> response = await _tokenService.UpdateRefreshTokenAsync(refreshToken);
+
+                _logger.LogInformation("{Controller}/{Action} End",
+                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
+
+                return Ok(response);
             }
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            JwtSecurityToken jwtSecurityToken = tokenHandler.ReadToken(refreshToken) as JwtSecurityToken;
-            //Refresh Token過期
-            if (DateTime.Now > dbToken.ExpiredDate)
+            catch (Exception ex)
             {
-                return Ok(new Response<string>
-                {
-                    Success = false,
-                    Status = StatusCodes.Status401Unauthorized,
-                    Message = "Refresh_Token Expired",
-                    Data = ""
-                });
+                _logger.LogError(ex, "{Controller}/{Action} Fail",
+                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
+                throw;
             }
-
-            //更新資料庫
-            dbToken.ExpiredDate = Settings.Refresh_Expired_Date();
-            dbToken.UpdatedDate = DateTime.Now;
-            _loginContext.Tokens.Update(dbToken);
-            _loginContext.SaveChanges();
-
-            //產生新的Access Token並回傳
-            string nameClaim = jwtSecurityToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value ?? "";
-            string roleClaim = jwtSecurityToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? "";
-
-            User userTable = new User { Email = nameClaim, Password = roleClaim };
-            string token = TokenServices.CreateAccessToken(userTable);
-
-            return Ok(new Response<string>
-            {
-                Success = true,
-                Status = StatusCodes.Status200OK,
-                Message = "",
-                Data = token
-            });
         }
 
         //[HttpGet("LoginIndex2")]
@@ -268,191 +232,144 @@ namespace Jacmazon_ECommerce.Controllers
         /// <summary>
         /// 登出
         /// </summary>
-        /// <param name="accessToken"></param>
+        /// <param name="refreshToken"></param>
         /// <returns></returns>
         [HttpPost("Logout")]
         public async Task<IActionResult> Logout([FromBody] string refreshToken)
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            Token? dbToken = await _loginContext.Tokens.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
-
-            if (dbToken == null)
+            try
             {
-                return Ok(new Response<string>
-                {
-                    Success = false,
-                    Status = StatusCodes.Status401Unauthorized,
-                    Message = "Refresh_Token not found",
-                    Data = ""
-                });
+                _logger.LogInformation("{Controller}/{Action} Start",
+                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
+
+                Response<string> response = await _tokenService.DeleteRefreshTokenAsync(refreshToken);
+
+                _logger.LogInformation("{Controller}/{Action} End",
+                    ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
+
+                return Ok(response);
             }
-
-            _loginContext.Tokens.Remove(dbToken);
-            _loginContext.SaveChanges();
-
-            return Ok(new Response<string>
+            catch (Exception ex)
             {
-                Success = true,
-                Status = StatusCodes.Status200OK,
-                Message = "",
-                Data = ""
-            });
+                _logger.LogError(ex, "{Controller}/{Action} Fail",
+                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
+                throw;
+            }
         }
 
         /// <summary>
-        /// 驗證Email，是否已註冊
+        /// 驗證Email
         /// </summary>
-        /// <param name="refreshToken"></param>
+        /// <param name="email"></param>
         /// <returns></returns>
         [HttpPost("Email")]
         public async Task<IActionResult> Email([FromBody] string email)
         {
-            //驗證格式
-            if (string.IsNullOrWhiteSpace(email))
-            {
-                return Ok(new Response<string>
-                {
-                    Success = false,
-                    Status = StatusCodes.Status400BadRequest,
-                    Message = "驗證錯誤",
-                    Data = ""
-                });
-            }
+            _logger.LogInformation("{Controller}/{Action} Start",
+                    ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
 
-            try
-            {
-                // Normalize the domain
-                email = Regex.Replace(email, @"(@)(.+)$", DomainMapper,
-                                      RegexOptions.None, TimeSpan.FromMilliseconds(200));
+            EmailValidateAttribute emailValidateAttribute = new();
+            bool isEmailValid = emailValidateAttribute.IsValid(email);
 
-                // Examines the domain part of the email and normalizes it.
-                string DomainMapper(Match match)
-                {
-                    // Use IdnMapping class to convert Unicode domain names.
-                    var idn = new IdnMapping();
-
-                    // Pull out and process domain name (throws ArgumentException on invalid)
-                    string domainName = idn.GetAscii(match.Groups[2].Value);
-
-                    return match.Groups[1].Value + domainName;
-                }
-            }
-            catch (RegexMatchTimeoutException e)
-            {
-
-            }
-            catch (ArgumentException e)
-            {
-
-            }
-
-            try
-            {
-                #region 發送驗證碼回去，並新增至資料庫等待驗證
-                string verifyCode = "";
-                #endregion
-                if (Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250)))
-                {
-                    User? userLogin = await _loginContext.Users.FirstOrDefaultAsync(u => u.Email == email);
-                    if (userLogin != null)
-                    {
-                        return Ok(new Response<string>
-                        {
-                            Success = false,
-                            Status = StatusCodes.Status401Unauthorized,
-                            Message = "電子信箱已註冊",
-                            Data = ""
-                        });
-                    }
-
-                    return Ok(new Response<string>
-                    {
-                        Success = true,
-                        Status = StatusCodes.Status200OK,
-                        Message = "",
-                        Data = verifyCode
-                    });
-                }
-                else
-                {
-                    return Ok(new Response<string>
-                    {
-                        Success = false,
-                        Status = StatusCodes.Status400BadRequest,
-                        Message = "格式錯誤",
-                        Data = ""
-                    });
-                }
-            }
-            catch (RegexMatchTimeoutException)
-            {
-
-            }
-
-            return Ok(new Response<string>
-            {
-                Success = false,
-                Status = StatusCodes.Status400BadRequest,
-                Message = "驗證錯誤",
-                Data = ""
-            });
-        }
-
-        /// <summary>
-        /// 驗證手機號碼是否已註冊
-        /// </summary>
-        /// <param name="refreshToken"></param>
-        /// <returns></returns>
-        [HttpPost("phone")]
-        public async Task<IActionResult> Phone([FromBody] string phone)
-        {
-            if (string.IsNullOrEmpty(phone))
-            {
-                return Ok(new Response<string>
-                {
-                    Success = false,
-                    Status = StatusCodes.Status400BadRequest,
-                    Message = "驗證錯誤",
-                    Data = ""
-                });
-            }
-
-            //格式驗證
-            if (!Regex.IsMatch(phone, @"^09[0-9]{8}$"))
+            if (isEmailValid)
             {
                 return Ok(new Response<string>
                 {
                     Success = false,
                     Status = StatusCodes.Status400BadRequest,
                     Message = "格式錯誤",
-                    Data = ""
                 });
             }
 
-            User? userLogin = await _loginContext.Users.FirstOrDefaultAsync(u => u.Email == phone);
-            if (userLogin != null)
+            try
+            {
+                bool isRegistered = await _userService.IsEmailRegisteredAsync(email);
+                if (isRegistered)
+                {
+                    return Ok(new Response<string>
+                    {
+                        Success = false,
+                        Status = StatusCodes.Status401Unauthorized,
+                        Message = "電子信箱已註冊",
+                    });
+                }
+
+                //TODO:驗證碼待實作
+                string verifyCode = "";
+
+                _logger.LogInformation("{Controller}/{Action} End",
+                    ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
+
+                return Ok(new Response<string>
+                {
+                    Success = true,
+                    Status = StatusCodes.Status200OK,
+                    Data = verifyCode
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Controller}/{Action} Fail",
+                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 驗證手機號碼
+        /// </summary>
+        /// <param name="phone"></param>
+        /// <returns></returns>
+        [HttpPost("phone")]
+        public async Task<IActionResult> Phone([FromBody] string phone)
+        {
+            _logger.LogInformation("{Controller}/{Action} Start",
+                    ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
+
+            PhoneValidateAttribute phoneValidateAttribute = new();
+            bool isPhoneValid = phoneValidateAttribute.IsValid(phone);
+            if (isPhoneValid)
             {
                 return Ok(new Response<string>
                 {
                     Success = false,
-                    Status = StatusCodes.Status401Unauthorized,
-                    Message = "手機已註冊",
-                    Data = ""
+                    Status = StatusCodes.Status400BadRequest,
+                    Message = "格式錯誤",
                 });
             }
 
-            #region 發送驗證碼回去，並新增至資料庫等待驗證
-            string verifyCode = "";
-            #endregion
-
-            return Ok(new Response<string>
+            try
             {
-                Success = true,
-                Status = StatusCodes.Status200OK,
-                Message = "",
-                Data = verifyCode
-            });
-        }
+                bool isRegistered = await _userService.IsPhoneRegisteredAsync(phone);
+                if (isRegistered)
+                {
+                    return Ok(new Response<string>
+                    {
+                        Success = false,
+                        Status = StatusCodes.Status401Unauthorized,
+                        Message = "手機號碼已註冊",
+                    });
+                }
 
+                //TODO:驗證碼待實作
+                string verifyCode = "";
+
+                _logger.LogInformation("{Controller}/{Action} End",
+                    ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
+
+                return Ok(new Response<string>
+                {
+                    Success = true,
+                    Status = StatusCodes.Status200OK,
+                    Data = verifyCode
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Controller}/{Action} Fail",
+                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
+                throw;
+            }
+        }
     }
 }

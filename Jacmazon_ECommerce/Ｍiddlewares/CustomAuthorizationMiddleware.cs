@@ -1,5 +1,5 @@
 ﻿using Azure.Core;
-using Jacmazon_ECommerce.JWTServices;
+using Jacmazon_ECommerce.JWT;
 using Jacmazon_ECommerce.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Protocols.WsTrust;

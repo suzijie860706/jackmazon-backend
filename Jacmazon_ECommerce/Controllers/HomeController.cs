@@ -1,11 +1,6 @@
 using Jacmazon_ECommerce.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using Jacmazon_ECommerce.Models;
-using Microsoft.AspNetCore.OutputCaching;
-using CalculatorService;
-using ReverseService;
-using WCFService;
 
 namespace Jacmazon_ECommerce.Controllers
 {

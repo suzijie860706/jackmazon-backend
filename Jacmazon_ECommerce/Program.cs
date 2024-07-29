@@ -1,23 +1,19 @@
-using Jacmazon_ECommerce.Interfaces;
-using Jacmazon_ECommerce.Models;
-using Jacmazon_ECommerce.Models.AdventureWorksLT2016Context;
-using Jacmazon_ECommerce.Data;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Jacmazon_ECommerce.Services;
-using Microsoft.AspNetCore.Mvc;
 using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Jacmazon_ECommerce.JWTServices;
-using Microsoft.IdentityModel.Tokens;
-using Jacmazon_ECommerce.Ｍiddlewares;
-using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.OpenApi.Models;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.OpenApi.Models;
+using Jacmazon_ECommerce.JWT;
+using Jacmazon_ECommerce.Data;
+using Jacmazon_ECommerce.Services;
+using Jacmazon_ECommerce.Ｍiddlewares;
+using Jacmazon_ECommerce.Repositories;
+using Jacmazon_ECommerce.Models.LoginContext;
+using Jacmazon_ECommerce.Models.AdventureWorksLT2016Context;
 using Serilog;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore;
+using Jacmazon_ECommerce.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,14 +34,33 @@ builder.Host.UseSerilog();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+//停止ModelState自動回傳400過濾器
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.SuppressModelStateInvalidFilter = true;
+});
+//自己寫的欄位驗證器
+builder.Services.AddMvc(options =>
+{
+    options.Filters.Add(typeof(ValidatorActionFilter));
+});
+
+
 //資料庫
 builder.Services.AddDbContext<AdventureWorksLt2016Context>(option =>
     option.UseSqlServer(builder.Configuration.GetConnectionString("AdventureWorksLT2016")));
 builder.Services.AddDbContext<LoginContext>(option =>
     option.UseSqlServer(builder.Configuration.GetConnectionString("Login")));
 
-builder.Services.AddScoped<ICRUDRepository<ProductCategory>, ProductCategoryRepository>();
-builder.Services.AddScoped<ICRUDRepository<Product>, ProductRepository>();
+//Services DI
+builder.Services.AddScoped<ICRUDRepository<User>, CRUDRepository<User, LoginContext>>();
+builder.Services.AddScoped<ICRUDRepository<Token>, CRUDRepository<Token, LoginContext>>();
+builder.Services.AddScoped<ICRUDRepository<Product>, CRUDRepository<Product, AdventureWorksLt2016Context>>();
+
+//Controller DI
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 
 #region JWT設定
 var key = Encoding.UTF8.GetBytes(Settings.Secret);
@@ -65,7 +80,7 @@ builder.Services.AddAuthentication(x =>
 
     x.RequireHttpsMetadata = false;
     x.SaveToken = true;
-    x.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    x.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
 
@@ -79,8 +94,6 @@ builder.Services.AddAuthentication(x =>
 });
 #endregion
 
-builder.Services.AddScoped<ICRUDService<ProductCategory>, CRUDService<ProductCategory>>();
-builder.Services.AddScoped<ICRUDService<Product>, CRUDService<Product>>();
 //回應快取
 builder.Services.AddResponseCaching();
 

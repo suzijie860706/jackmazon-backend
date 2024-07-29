@@ -5,6 +5,8 @@ VisualStudioVersion = 17.9.34701.34
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jacmazon_ECommerce", "Jacmazon_ECommerce\Jacmazon_ECommerce.csproj", "{AE5D8D0A-60C0-4F63-8933-95DE2E10C6C9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jacmazon_ECommerce.Tests", "Jacmazon_ECommerce.Tests\Jacmazon_ECommerce.Tests.csproj", "{ABCADAB5-862E-4A4B-92EF-E2CE4B5BBE2D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{AE5D8D0A-60C0-4F63-8933-95DE2E10C6C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE5D8D0A-60C0-4F63-8933-95DE2E10C6C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AE5D8D0A-60C0-4F63-8933-95DE2E10C6C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABCADAB5-862E-4A4B-92EF-E2CE4B5BBE2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABCADAB5-862E-4A4B-92EF-E2CE4B5BBE2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABCADAB5-862E-4A4B-92EF-E2CE4B5BBE2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABCADAB5-862E-4A4B-92EF-E2CE4B5BBE2D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
