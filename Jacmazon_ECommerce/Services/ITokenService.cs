@@ -1,4 +1,4 @@
-﻿using Jacmazon_ECommerce.DTOs;
+﻿using Jacmazon_ECommerce.ViewModels;
 using Jacmazon_ECommerce.Models;
 using Jacmazon_ECommerce.Models.LoginContext;
 using NuGet.Protocol.Core.Types;
@@ -14,7 +14,7 @@ namespace Jacmazon_ECommerce.Services
         /// </summary>
         /// <param name="email"></param>
         /// <returns>TokenResponseDto Entity</returns>
-        public Task<TokenResponseDto> CreateTokenAsync(string email);
+        public Task<TokenViewModel> CreateTokenAsync(string email);
 
         /// <summary>
         /// 更新

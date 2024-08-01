@@ -1,4 +1,4 @@
-﻿using Jacmazon_ECommerce.DTOs;
+﻿using Jacmazon_ECommerce.ViewModels;
 using Jacmazon_ECommerce.Models.AdventureWorksLT2016Context;
 using Jacmazon_ECommerce.Repositories;
 
@@ -13,10 +13,10 @@ namespace Jacmazon_ECommerce.Services
             _repository = repository;
         }
 
-        public async Task<IEnumerable<ProductResponseDto>> GetAllProducts()
+        public async Task<IEnumerable<ProductViewModel>> GetAllProducts()
         {
             IEnumerable<Product> products = await _repository.FindAsync(x => true);
-            IEnumerable<ProductResponseDto> productResponseDtos = products.Select(x => new ProductResponseDto { });
+            IEnumerable<ProductViewModel> productResponseDtos = products.Select(x => new ProductViewModel { });
             return productResponseDtos;
         }
     }

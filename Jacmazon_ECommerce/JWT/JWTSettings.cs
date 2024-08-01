@@ -5,24 +5,24 @@ using System.Text;
 
 namespace Jacmazon_ECommerce.JWT
 {
-    public static class Settings
+    public class JWTSettings : IJWTSettings
     {
-        public static readonly string Secret = "Jacmazon_ECommerce20240321JackSu";
+        private readonly string Secret = "Jacmazon_ECommerce20240321JackSu";
 
-        public static readonly string Issuer = "http://localhost:5092/";
+        private readonly string Issuer = "http://localhost:5092/";
 
         /// <summary>
         /// 取得Access Token
         /// </summary>
         /// <param name="email"></param>
         /// <returns></returns>
-        public static string CreateAccessToken(string email)
+        public string CreateAccessToken(string email)
         {
-            var key = Encoding.UTF8.GetBytes(Settings.Secret);
+            var key = Encoding.UTF8.GetBytes(Secret);
 
             var descriptor = new SecurityTokenDescriptor
             {
-                Issuer = Settings.Issuer,
+                Issuer = Issuer,
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     new(ClaimTypes.Name, email),
@@ -42,19 +42,19 @@ namespace Jacmazon_ECommerce.JWT
         /// </summary>
         /// <param name="email"></param>
         /// <returns></returns>
-        public static string CreateRefreshToken(string email)
+        public string CreateRefreshToken(string email)
         {
-            var key = Encoding.UTF8.GetBytes(Settings.Secret);
+            var key = Encoding.UTF8.GetBytes(Secret);
 
             var descriptor = new SecurityTokenDescriptor
             {
-                Issuer = Settings.Issuer,
+                Issuer = Issuer,
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     new Claim(ClaimTypes.Name, email),
                     //new Claim(ClaimTypes.Role, )
                 }),
-                Expires = Settings.Refresh_Expired_Date(),
+                Expires = Refresh_Expired_Date(),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
@@ -66,7 +66,7 @@ namespace Jacmazon_ECommerce.JWT
         /// <summary>
         /// 取得Refresh Token Expired Date
         /// </summary>
-        public static DateTime Refresh_Expired_Date()
+        public DateTime Refresh_Expired_Date()
         {
             return DateTime.Now.AddSeconds(40);
         }

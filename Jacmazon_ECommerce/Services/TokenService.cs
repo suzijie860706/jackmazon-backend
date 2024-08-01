@@ -1,7 +1,7 @@
 ﻿using Jacmazon_ECommerce.Repositories;
 using Jacmazon_ECommerce.Models.LoginContext;
 using Jacmazon_ECommerce.JWT;
-using Jacmazon_ECommerce.DTOs;
+using Jacmazon_ECommerce.ViewModels;
 using NuGet.Protocol.Core.Types;
 using System.IdentityModel.Tokens;
 using Jacmazon_ECommerce.Models;
@@ -14,18 +14,21 @@ namespace Jacmazon_ECommerce.Services
     public class TokenService : ITokenService
     {
         private readonly ICRUDRepository<Token> _repository;
-        public TokenService(ICRUDRepository<Token> userRepository)
+        private readonly IJWTSettings _jwtSettings;
+
+        public TokenService(ICRUDRepository<Token> userRepository, IJWTSettings jwtSettings)
         {
             _repository = userRepository;
+            _jwtSettings = jwtSettings;
         }
 
-        public async Task<TokenResponseDto> CreateTokenAsync(string email)
+        public async Task<TokenViewModel> CreateTokenAsync(string email)
         {
-            TokenResponseDto tokenDto = new()
+            TokenViewModel tokenDto = new()
             {
-                AccessToken = Settings.CreateAccessToken(email),
-                RefreshToken = Settings.CreateRefreshToken(email),
-                RefreshTokenExpiryDate = Settings.Refresh_Expired_Date()
+                AccessToken = _jwtSettings.CreateAccessToken(email),
+                RefreshToken = _jwtSettings.CreateRefreshToken(email),
+                RefreshTokenExpiryDate = _jwtSettings.Refresh_Expired_Date()
             };
 
             Token token = new()
@@ -40,6 +43,8 @@ namespace Jacmazon_ECommerce.Services
 
             return tokenDto;
         }
+
+
 
         public async Task<Response<string>> UpdateRefreshTokenAsync(string refreshToken)
         {
@@ -66,7 +71,7 @@ namespace Jacmazon_ECommerce.Services
             }
 
             //更新Table
-            token.ExpiredDate = Settings.Refresh_Expired_Date();
+            token.ExpiredDate = _jwtSettings.Refresh_Expired_Date();
             token.UpdatedDate = DateTime.Now;
             await _repository.UpdateAsync(token);
 
@@ -74,7 +79,7 @@ namespace Jacmazon_ECommerce.Services
             string email = jwtSecurityToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value ?? "";
             //string roleClaim = jwtSecurityToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? "";
 
-            string accessToken = Settings.CreateRefreshToken(email);
+            string accessToken = _jwtSettings.CreateRefreshToken(email);
 
             response.SuccessResponse(accessToken);
             return response;

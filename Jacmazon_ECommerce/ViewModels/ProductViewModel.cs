@@ -2,9 +2,9 @@
 using Jacmazon_ECommerce.Models.LoginContext;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Jacmazon_ECommerce.DTOs
+namespace Jacmazon_ECommerce.ViewModels
 {
-    public class ProductResponseDto
+    public class ProductViewModel
     {
         /// <summary>
         /// Primary key for Product records.

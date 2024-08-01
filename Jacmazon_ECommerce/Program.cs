@@ -14,6 +14,8 @@ using Jacmazon_ECommerce.Models.LoginContext;
 using Jacmazon_ECommerce.Models.AdventureWorksLT2016Context;
 using Serilog;
 using Jacmazon_ECommerce.Extensions;
+using Jacmazon_ECommerce.ViewModels;
+using AutoMapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,8 +27,7 @@ var configuration = new ConfigurationBuilder()
 
 //使用從 appsettings.json 讀取到的內容來設定 logger
 Log.Logger = new LoggerConfiguration()
-            .ReadFrom.Configuration(configuration)
-.CreateLogger();
+            .ReadFrom.Configuration(configuration).CreateLogger();
 
 // 將 Serilog 註冊為日誌記錄提供程序
 builder.Host.UseSerilog();
@@ -39,7 +40,7 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.SuppressModelStateInvalidFilter = true;
 });
-//自己寫的欄位驗證器
+//自定義欄位驗證器
 builder.Services.AddMvc(options =>
 {
     options.Filters.Add(typeof(ValidatorActionFilter));
@@ -52,18 +53,24 @@ builder.Services.AddDbContext<AdventureWorksLt2016Context>(option =>
 builder.Services.AddDbContext<LoginContext>(option =>
     option.UseSqlServer(builder.Configuration.GetConnectionString("Login")));
 
-//Services DI
+//Business Layer
 builder.Services.AddScoped<ICRUDRepository<User>, CRUDRepository<User, LoginContext>>();
 builder.Services.AddScoped<ICRUDRepository<Token>, CRUDRepository<Token, LoginContext>>();
 builder.Services.AddScoped<ICRUDRepository<Product>, CRUDRepository<Product, AdventureWorksLt2016Context>>();
 
-//Controller DI
+//Presentation Layer
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 
+//DI JWT 
+builder.Services.AddTransient<IJWTSettings, JWTSettings>();
+
+//AutoMapper DI Profile Class
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
 #region JWT設定
-var key = Encoding.UTF8.GetBytes(Settings.Secret);
+var key = Encoding.UTF8.GetBytes(IJWTSettings.Secret);
 //加入驗證
 builder.Services.AddAuthentication(x =>
 {
@@ -89,7 +96,7 @@ builder.Services.AddAuthentication(x =>
         //需要修改做驗證，避免任何人進來測試Token
         ValidateIssuer = false, //是否驗證誰核發的?
         ValidateAudience = false, //哪些客戶可以使用? 
-        ValidIssuer = Settings.Issuer
+        ValidIssuer = IJWTSettings.Issuer
     };
 });
 #endregion
@@ -179,12 +186,8 @@ builder.Services.AddSwaggerGen(options =>
 });
 #endregion
 
-
 //builder.Services.Configure
 var app = builder.Build();
-
-//antiforgeryToken
-
 
 #region 自定義Middleware
 // 自定義JTW [Authorize] 未通過時Response

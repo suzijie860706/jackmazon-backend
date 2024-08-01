@@ -1,14 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using AutoMapper;
+using AutoMapper.Configuration.Annotations;
 using Jacmazon_ECommerce.Extensions;
 
 namespace Jacmazon_ECommerce.Models.LoginContext;
-
-[ModelMetadataType(typeof(UserMetaData))]
-public partial class User
-{
-}
 
 public class UserMetaData
 {

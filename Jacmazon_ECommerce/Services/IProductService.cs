@@ -1,4 +1,4 @@
-﻿using Jacmazon_ECommerce.DTOs;
+﻿using Jacmazon_ECommerce.ViewModels;
 
 namespace Jacmazon_ECommerce.Services
 {
@@ -8,6 +8,6 @@ namespace Jacmazon_ECommerce.Services
         /// 取得所有產品資料
         /// </summary>
         /// <returns></returns>
-        public Task<IEnumerable<ProductResponseDto>> GetAllProducts();
+        public Task<IEnumerable<ProductViewModel>> GetAllProducts();
     }
 }

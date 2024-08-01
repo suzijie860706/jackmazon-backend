@@ -1,15 +1,13 @@
-﻿using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
-using System.Globalization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Antiforgery;
-using Jacmazon_ECommerce.Data;
 using Jacmazon_ECommerce.Models;
 using Jacmazon_ECommerce.Services;
 using Jacmazon_ECommerce.Models.LoginContext;
-using Jacmazon_ECommerce.DTOs;
+using Jacmazon_ECommerce.ViewModels;
 using Jacmazon_ECommerce.Extensions;
+using AutoMapper;
+using System.Reflection;
 
 namespace Jacmazon_ECommerce.Controllers
 {
@@ -22,15 +20,17 @@ namespace Jacmazon_ECommerce.Controllers
         private readonly IUserService _userService;
         private readonly ITokenService _tokenService;
         private readonly IProductService _productService;
+        private readonly IMapper _mapper;
 
         public WebAPIController(IAntiforgery antiforgery, ILogger<WebAPIController> logger, IUserService userService,
-            ITokenService tokenService, IProductService productService)
+            ITokenService tokenService, IProductService productService, IMapper mapper)
         {
             _antiforgery = antiforgery;
             _logger = logger;
             _userService = userService;
             _tokenService = tokenService;
             _productService = productService;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace Jacmazon_ECommerce.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("GetLogs")]
-        public async Task<IActionResult> GetLogs()
+        public IActionResult GetLogs()
         {
             var d = Directory.GetCurrentDirectory();
             string filePath = Path.Combine(d, $"Serilogs/log-{DateTime.Now.ToString("yyyyMMdd")}.txt");
@@ -48,8 +48,21 @@ namespace Jacmazon_ECommerce.Controllers
                 return NotFound("Log file not found.");
             }
 
-            var logs = System.IO.File.ReadAllLines(filePath);
-            return Ok(logs);
+            try
+            {
+                using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (var reader = new StreamReader(fileStream))
+                {
+                    var logs = reader.ReadToEnd().Split(Environment.NewLine);
+                    return Ok(logs);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Controller}/{Action} Fail",
+                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
+                throw;
+            }
         }
 
         /// <summary>
@@ -57,7 +70,7 @@ namespace Jacmazon_ECommerce.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("antiForgery")]
-        public async Task<IActionResult> GetAntiforgeryToken()
+        public IActionResult GetAntiforgeryToken()
         {
             var tokens = _antiforgery.GetAndStoreTokens(HttpContext);
             Response.Cookies.Append("XSRF-TOKEN", tokens.RequestToken!,
@@ -73,7 +86,7 @@ namespace Jacmazon_ECommerce.Controllers
         /// <returns></returns>
         [HttpPost("Login")]
         //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login([FromBody] UserRegisterDto user)
+        public async Task<IActionResult> Login([FromBody] UserViewModel user)
         {
             _logger.LogInformation("{Controller}/{Action} Start",
                 ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
@@ -92,12 +105,12 @@ namespace Jacmazon_ECommerce.Controllers
                 }
 
                 //建立Token
-                TokenResponseDto token1 = await _tokenService.CreateTokenAsync(user.Email);
+                TokenViewModel token1 = await _tokenService.CreateTokenAsync(user.Email);
 
                 _logger.LogInformation("{Controller}/{Action} End",
                     ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
 
-                return Ok(new Response<TokenResponseDto>
+                return Ok(new Response<TokenViewModel>
                 {
                     Success = true,
                     Status = StatusCodes.Status200OK,
@@ -119,7 +132,7 @@ namespace Jacmazon_ECommerce.Controllers
         /// <returns></returns>
         [HttpPost("CreateAccount")]
         //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateAccount([FromBody] UserRegisterDto user)
+        public async Task<IActionResult> CreateAccount([FromBody] UserViewModel user)
         {
             _logger.LogInformation("{Controller}/{Action} Start",
                 ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
@@ -138,7 +151,14 @@ namespace Jacmazon_ECommerce.Controllers
                     });
                 }
 
-                User user1 = Mapper.Trans<UserRegisterDto, User>(user);
+                var config = new MapperConfiguration(cfg => cfg.CreateMap<UserViewModel, User>());
+                config.AssertConfigurationIsValid();
+                var mapper = config.CreateMapper();
+                
+                
+                User user1 = _mapper.Map<User>(user);
+
+                //Models.LoginContext.User user1 = Mapper.Trans<ViewModels.UserViewModel, Models.LoginContext.User>(user);
                 await _userService.CreateUserAsync(user1);
 
                 _logger.LogInformation("{Controller}/{Action} End",
@@ -173,12 +193,12 @@ namespace Jacmazon_ECommerce.Controllers
 
             try
             {
-                IEnumerable<ProductResponseDto> productResponseDtos = await _productService.GetAllProducts();
+                IEnumerable<ProductViewModel> productResponseDtos = await _productService.GetAllProducts();
 
                 _logger.LogInformation("{Controller}/{Action} End",
                 ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
 
-                return Ok(new Response<IEnumerable<ProductResponseDto>>
+                return Ok(new Response<IEnumerable<ProductViewModel>>
                 {
                     Success = true,
                     Status = StatusCodes.Status200OK,
@@ -200,7 +220,7 @@ namespace Jacmazon_ECommerce.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost("Refresh_Token")]
-        public async Task<IActionResult> Refresh_Token([FromBody] string refreshToken)
+        public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
         {
             try
             {

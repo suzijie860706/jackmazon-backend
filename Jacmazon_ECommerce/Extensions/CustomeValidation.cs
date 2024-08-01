@@ -14,9 +14,9 @@ namespace Jacmazon_ECommerce.Extensions
     {
         /// <summary>錯誤訊息</summary>
         public string _errorMessage = string.Empty;
-        protected override ValidationResult? IsValid(object value, ValidationContext validationContext)
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {
-            string? email = value.ToString() ?? "";
+            string email = value?.ToString() ?? "";
             //驗證格式
             if (string.IsNullOrWhiteSpace(email))
             {
@@ -65,9 +65,9 @@ namespace Jacmazon_ECommerce.Extensions
     {
         /// <summary>錯誤訊息</summary>
         public string _errorMessage = string.Empty;
-        protected override ValidationResult? IsValid(object value, ValidationContext validationContext)
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {
-            string? phone = value.ToString() ?? "";
+            string phone = value?.ToString() ?? "";
             //驗證格式
             if (string.IsNullOrWhiteSpace(phone))
             {

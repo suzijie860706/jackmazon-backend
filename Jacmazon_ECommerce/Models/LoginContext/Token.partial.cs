@@ -4,11 +4,6 @@ using System.Text.Json.Serialization;
 
 namespace Jacmazon_ECommerce.Models.LoginContext;
 
-[ModelMetadataType(typeof(TokenMetaData))]
-public partial class Token
-{
-}
-
 public class TokenMetaData
 {
     [Key]
