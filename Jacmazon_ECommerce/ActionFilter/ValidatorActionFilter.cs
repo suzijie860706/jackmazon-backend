@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Jacmazon_ECommerce.Models;
 
-namespace Jacmazon_ECommerce.Extensions
+namespace Jacmazon_ECommerce.ActionFilter
 {
     /// <summary>
     /// ModelState驗證器

@@ -13,9 +13,9 @@ using Jacmazon_ECommerce.Repositories;
 using Jacmazon_ECommerce.Models.LoginContext;
 using Jacmazon_ECommerce.Models.AdventureWorksLT2016Context;
 using Serilog;
-using Jacmazon_ECommerce.Extensions;
 using Jacmazon_ECommerce.ViewModels;
 using AutoMapper;
+using Jacmazon_ECommerce.ActionFilter;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,10 +40,13 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.SuppressModelStateInvalidFilter = true;
 });
-//自定義欄位驗證器
+
 builder.Services.AddMvc(options =>
 {
+    //自定義欄位驗證器
     options.Filters.Add(typeof(ValidatorActionFilter));
+    //Log紀錄執行位置
+    options.Filters.Add(typeof(LoggingActionFilter));
 });
 
 

@@ -7,7 +7,6 @@ using Jacmazon_ECommerce.Models.LoginContext;
 using Jacmazon_ECommerce.ViewModels;
 using Jacmazon_ECommerce.Extensions;
 using AutoMapper;
-using System.Reflection;
 
 namespace Jacmazon_ECommerce.Controllers
 {
@@ -88,8 +87,6 @@ namespace Jacmazon_ECommerce.Controllers
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> Login([FromBody] UserViewModel user)
         {
-            _logger.LogInformation("{Controller}/{Action} Start",
-                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
             try
             {
                 // 驗證帳密
@@ -107,9 +104,6 @@ namespace Jacmazon_ECommerce.Controllers
                 //建立Token
                 TokenViewModel token1 = await _tokenService.CreateTokenAsync(user.Email);
 
-                _logger.LogInformation("{Controller}/{Action} End",
-                    ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
-
                 return Ok(new Response<TokenViewModel>
                 {
                     Success = true,
@@ -117,10 +111,8 @@ namespace Jacmazon_ECommerce.Controllers
                     Data = token1
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogError(ex, "{Controller}/{Action} Fail",
-                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
                 throw;
             }
         }
@@ -134,9 +126,6 @@ namespace Jacmazon_ECommerce.Controllers
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateAccount([FromBody] UserViewModel user)
         {
-            _logger.LogInformation("{Controller}/{Action} Start",
-                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
-
             try
             {
                 //驗證Email
@@ -150,19 +139,9 @@ namespace Jacmazon_ECommerce.Controllers
                         Message = "帳號已建立",
                     });
                 }
-
-                var config = new MapperConfiguration(cfg => cfg.CreateMap<UserViewModel, User>());
-                config.AssertConfigurationIsValid();
-                var mapper = config.CreateMapper();
-                
                 
                 User user1 = _mapper.Map<User>(user);
-
-                //Models.LoginContext.User user1 = Mapper.Trans<ViewModels.UserViewModel, Models.LoginContext.User>(user);
                 await _userService.CreateUserAsync(user1);
-
-                _logger.LogInformation("{Controller}/{Action} End",
-                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
 
                 return Ok(new Response<string>
                 {
@@ -170,10 +149,8 @@ namespace Jacmazon_ECommerce.Controllers
                     Status = StatusCodes.Status200OK,
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogError(ex, "{Controller}/{Action} Fail",
-                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
                 throw;
             }
 
@@ -188,15 +165,9 @@ namespace Jacmazon_ECommerce.Controllers
         [Authorize]
         public async Task<IActionResult> ProductList()
         {
-            _logger.LogInformation("{Controller}/{Action} Start",
-                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
-
             try
             {
                 IEnumerable<ProductViewModel> productResponseDtos = await _productService.GetAllProducts();
-
-                _logger.LogInformation("{Controller}/{Action} End",
-                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
 
                 return Ok(new Response<IEnumerable<ProductViewModel>>
                 {
@@ -206,10 +177,8 @@ namespace Jacmazon_ECommerce.Controllers
                 });
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogError(ex, "{Controller}/{Action} Fail",
-                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
                 throw;
             }
 
@@ -224,20 +193,12 @@ namespace Jacmazon_ECommerce.Controllers
         {
             try
             {
-                _logger.LogInformation("{Controller}/{Action} Start",
-                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
-
                 Response<string> response = await _tokenService.UpdateRefreshTokenAsync(refreshToken);
-
-                _logger.LogInformation("{Controller}/{Action} End",
-                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
 
                 return Ok(response);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogError(ex, "{Controller}/{Action} Fail",
-                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
                 throw;
             }
         }
@@ -259,20 +220,12 @@ namespace Jacmazon_ECommerce.Controllers
         {
             try
             {
-                _logger.LogInformation("{Controller}/{Action} Start",
-                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
-
                 Response<string> response = await _tokenService.DeleteRefreshTokenAsync(refreshToken);
-
-                _logger.LogInformation("{Controller}/{Action} End",
-                    ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
 
                 return Ok(response);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogError(ex, "{Controller}/{Action} Fail",
-                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
                 throw;
             }
         }
@@ -285,9 +238,6 @@ namespace Jacmazon_ECommerce.Controllers
         [HttpPost("Email")]
         public async Task<IActionResult> Email([FromBody] string email)
         {
-            _logger.LogInformation("{Controller}/{Action} Start",
-                    ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
-
             EmailValidateAttribute emailValidateAttribute = new();
             bool isEmailValid = emailValidateAttribute.IsValid(email);
 
@@ -317,9 +267,6 @@ namespace Jacmazon_ECommerce.Controllers
                 //TODO:驗證碼待實作
                 string verifyCode = "";
 
-                _logger.LogInformation("{Controller}/{Action} End",
-                    ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
-
                 return Ok(new Response<string>
                 {
                     Success = true,
@@ -327,10 +274,8 @@ namespace Jacmazon_ECommerce.Controllers
                     Data = verifyCode
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogError(ex, "{Controller}/{Action} Fail",
-                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
                 throw;
             }
         }
@@ -343,9 +288,6 @@ namespace Jacmazon_ECommerce.Controllers
         [HttpPost("phone")]
         public async Task<IActionResult> Phone([FromBody] string phone)
         {
-            _logger.LogInformation("{Controller}/{Action} Start",
-                    ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
-
             PhoneValidateAttribute phoneValidateAttribute = new();
             bool isPhoneValid = phoneValidateAttribute.IsValid(phone);
             if (isPhoneValid)
@@ -374,9 +316,6 @@ namespace Jacmazon_ECommerce.Controllers
                 //TODO:驗證碼待實作
                 string verifyCode = "";
 
-                _logger.LogInformation("{Controller}/{Action} End",
-                    ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
-
                 return Ok(new Response<string>
                 {
                     Success = true,
@@ -384,10 +323,8 @@ namespace Jacmazon_ECommerce.Controllers
                     Data = verifyCode
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogError(ex, "{Controller}/{Action} Fail",
-                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
                 throw;
             }
         }

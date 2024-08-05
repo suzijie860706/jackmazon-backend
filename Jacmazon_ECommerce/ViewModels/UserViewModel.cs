@@ -2,6 +2,7 @@
 using Jacmazon_ECommerce.Extensions;
 using Jacmazon_ECommerce.Models.LoginContext;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Jacmazon_ECommerce.ViewModels
 {
