@@ -12,20 +12,18 @@ namespace Jacmazon_ECommerce.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class WebAPIController : ControllerBase
+    public class LoginController : ControllerBase
     {
-        private readonly ILogger<WebAPIController> _logger;
         private readonly IAntiforgery _antiforgery;
         private readonly IUserService _userService;
         private readonly ITokenService _tokenService;
         private readonly IProductService _productService;
         private readonly IMapper _mapper;
 
-        public WebAPIController(IAntiforgery antiforgery, ILogger<WebAPIController> logger, IUserService userService,
+        public LoginController(IAntiforgery antiforgery, IUserService userService,
             ITokenService tokenService, IProductService productService, IMapper mapper)
         {
             _antiforgery = antiforgery;
-            _logger = logger;
             _userService = userService;
             _tokenService = tokenService;
             _productService = productService;
@@ -47,21 +45,13 @@ namespace Jacmazon_ECommerce.Controllers
                 return NotFound("Log file not found.");
             }
 
-            try
+            using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var reader = new StreamReader(fileStream))
             {
-                using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                using (var reader = new StreamReader(fileStream))
-                {
-                    var logs = reader.ReadToEnd().Split(Environment.NewLine);
-                    return Ok(logs);
-                }
+                var logs = reader.ReadToEnd().Split(Environment.NewLine);
+                return Ok(logs);
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "{Controller}/{Action} Fail",
-                ControllerContext.ActionDescriptor.ControllerName, ControllerContext.ActionDescriptor.ActionName);
-                throw;
-            }
+
         }
 
         /// <summary>
@@ -87,34 +77,27 @@ namespace Jacmazon_ECommerce.Controllers
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> Login([FromBody] UserViewModel user)
         {
-            try
+            // 驗證帳密
+            bool isValidUser = await _userService.VerifyUserLogin(user.Email, user.Password);
+            if (!isValidUser)
             {
-                // 驗證帳密
-                bool isValidUser = await _userService.VerifyUserLogin(user.Email, user.Password);
-                if (!isValidUser)
+                return Ok(new Response<string>
                 {
-                    return Ok(new Response<string>
-                    {
-                        Success = false,
-                        Status = StatusCodes.Status401Unauthorized,
-                        Message = "帳號或密碼錯誤",
-                    });
-                }
-
-                //建立Token
-                TokenViewModel token1 = await _tokenService.CreateTokenAsync(user.Email);
-
-                return Ok(new Response<TokenViewModel>
-                {
-                    Success = true,
-                    Status = StatusCodes.Status200OK,
-                    Data = token1
+                    Success = false,
+                    Status = StatusCodes.Status401Unauthorized,
+                    Message = "帳號或密碼錯誤",
                 });
             }
-            catch (Exception)
+
+            //建立Token
+            TokenViewModel token1 = await _tokenService.CreateTokenAsync(user.Email);
+
+            return Ok(new Response<TokenViewModel>
             {
-                throw;
-            }
+                Success = true,
+                Status = StatusCodes.Status200OK,
+                Data = token1
+            });
         }
 
         /// <summary>
@@ -126,35 +109,25 @@ namespace Jacmazon_ECommerce.Controllers
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateAccount([FromBody] UserViewModel user)
         {
-            try
+            //驗證Email
+            bool isEmailRegistered = await _userService.IsEmailRegisteredAsync(user.Email);
+            if (isEmailRegistered)
             {
-                //驗證Email
-                bool isEmailRegistered = await _userService.IsEmailRegisteredAsync(user.Email);
-                if (isEmailRegistered)
-                {
-                    return Ok(new Response<string>
-                    {
-                        Success = false,
-                        Status = StatusCodes.Status401Unauthorized,
-                        Message = "帳號已建立",
-                    });
-                }
-                
-                User user1 = _mapper.Map<User>(user);
-                await _userService.CreateUserAsync(user1);
-
                 return Ok(new Response<string>
                 {
-                    Success = true,
-                    Status = StatusCodes.Status200OK,
+                    Success = false,
+                    Status = StatusCodes.Status401Unauthorized,
+                    Message = "帳號已建立",
                 });
             }
-            catch (Exception)
+
+            await _userService.CreateUserAsync(user.Email, user.Password);
+
+            return Ok(new Response<string>
             {
-                throw;
-            }
-
-
+                Success = true,
+                Status = StatusCodes.Status200OK,
+            });
         }
 
         /// <summary>
@@ -165,22 +138,14 @@ namespace Jacmazon_ECommerce.Controllers
         [Authorize]
         public async Task<IActionResult> ProductList()
         {
-            try
-            {
-                IEnumerable<ProductViewModel> productResponseDtos = await _productService.GetAllProducts();
+            IEnumerable<ProductViewModel> productResponseDtos = await _productService.GetAllProducts();
 
-                return Ok(new Response<IEnumerable<ProductViewModel>>
-                {
-                    Success = true,
-                    Status = StatusCodes.Status200OK,
-                    Data = productResponseDtos
-                });
-
-            }
-            catch (Exception)
+            return Ok(new Response<IEnumerable<ProductViewModel>>
             {
-                throw;
-            }
+                Success = true,
+                Status = StatusCodes.Status200OK,
+                Data = productResponseDtos
+            });
 
         }
 
@@ -191,16 +156,10 @@ namespace Jacmazon_ECommerce.Controllers
         [HttpPost("Refresh_Token")]
         public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
         {
-            try
-            {
-                Response<string> response = await _tokenService.UpdateRefreshTokenAsync(refreshToken);
+            Response<string> response = await _tokenService.UpdateRefreshTokenAsync(refreshToken);
 
-                return Ok(response);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            return Ok(response);
+
         }
 
         //[HttpGet("LoginIndex2")]
@@ -218,15 +177,23 @@ namespace Jacmazon_ECommerce.Controllers
         [HttpPost("Logout")]
         public async Task<IActionResult> Logout([FromBody] string refreshToken)
         {
-            try
+            bool result = await _tokenService.DeleteRefreshTokenAsync(refreshToken);
+            if (!result)
             {
-                Response<string> response = await _tokenService.DeleteRefreshTokenAsync(refreshToken);
-
-                return Ok(response);
+                return Ok(new Response<string>
+                {
+                    Success = false,
+                    Status = StatusCodes.Status401Unauthorized,
+                    Message = "查無此Token"
+                });
             }
-            catch (Exception)
+            else
             {
-                throw;
+                return Ok(new Response<string>
+                {
+                    Success = true,
+                    Status = StatusCodes.Status200OK,
+                });
             }
         }
 
@@ -251,33 +218,22 @@ namespace Jacmazon_ECommerce.Controllers
                 });
             }
 
-            try
+            bool isRegistered = await _userService.IsEmailRegisteredAsync(email);
+            if (isRegistered)
             {
-                bool isRegistered = await _userService.IsEmailRegisteredAsync(email);
-                if (isRegistered)
-                {
-                    return Ok(new Response<string>
-                    {
-                        Success = false,
-                        Status = StatusCodes.Status401Unauthorized,
-                        Message = "電子信箱已註冊",
-                    });
-                }
-
-                //TODO:驗證碼待實作
-                string verifyCode = "";
-
                 return Ok(new Response<string>
                 {
-                    Success = true,
-                    Status = StatusCodes.Status200OK,
-                    Data = verifyCode
+                    Success = false,
+                    Status = StatusCodes.Status401Unauthorized,
+                    Message = "電子信箱已註冊",
                 });
             }
-            catch (Exception)
+
+            return Ok(new Response<string>
             {
-                throw;
-            }
+                Success = true,
+                Status = StatusCodes.Status200OK,
+            });
         }
 
         /// <summary>
@@ -300,33 +256,22 @@ namespace Jacmazon_ECommerce.Controllers
                 });
             }
 
-            try
+            bool isRegistered = await _userService.IsPhoneRegisteredAsync(phone);
+            if (isRegistered)
             {
-                bool isRegistered = await _userService.IsPhoneRegisteredAsync(phone);
-                if (isRegistered)
-                {
-                    return Ok(new Response<string>
-                    {
-                        Success = false,
-                        Status = StatusCodes.Status401Unauthorized,
-                        Message = "手機號碼已註冊",
-                    });
-                }
-
-                //TODO:驗證碼待實作
-                string verifyCode = "";
-
                 return Ok(new Response<string>
                 {
-                    Success = true,
-                    Status = StatusCodes.Status200OK,
-                    Data = verifyCode
+                    Success = false,
+                    Status = StatusCodes.Status401Unauthorized,
+                    Message = "手機號碼已註冊",
                 });
             }
-            catch (Exception)
+
+            return Ok(new Response<string>
             {
-                throw;
-            }
+                Success = true,
+                Status = StatusCodes.Status200OK,
+            });
         }
     }
 }

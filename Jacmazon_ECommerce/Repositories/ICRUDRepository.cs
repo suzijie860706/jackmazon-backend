@@ -9,20 +9,20 @@ namespace Jacmazon_ECommerce.Repositories
         /// </summary>
         /// <param name="entity"></param>
         /// <returns>Id</returns>
-        Task<int> CreateAsync(TEntity entity);
+        Task<bool> CreateAsync(TEntity entity);
 
         /// <summary>
         /// 修改
         /// </summary>
         /// <param name="entity"></param>
-        Task UpdateAsync(TEntity entity);
+        Task<int> UpdateAsync(TEntity entity);
 
         /// <summary>
         /// 刪除
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="entity"></param>
         /// <returns></returns>
-        Task DeleteAsync(int id);
+        Task<int> DeleteAsync(TEntity entity);
 
         /// <summary>
         /// 單一查詢

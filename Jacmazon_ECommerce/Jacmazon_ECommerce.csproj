@@ -9,9 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Interfaces\**" />
     <Compile Remove="Serilogs\**" />
+    <Content Remove="Interfaces\**" />
     <Content Remove="Serilogs\**" />
+    <EmbeddedResource Remove="Interfaces\**" />
     <EmbeddedResource Remove="Serilogs\**" />
+    <None Remove="Interfaces\**" />
     <None Remove="Serilogs\**" />
   </ItemGroup>
 
@@ -45,7 +49,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Interfaces\" />
     <Folder Include="Models\AdventureWorksLT2016Context\" />
   </ItemGroup>
 

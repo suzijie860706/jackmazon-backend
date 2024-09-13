@@ -11,6 +11,8 @@ namespace Jacmazon_ECommerce.JWT
 
         private readonly string Issuer = "http://localhost:5092/";
 
+        JwtSecurityTokenHandler tokenHandler = new(); //方便Mock測試
+
         /// <summary>
         /// 取得Access Token
         /// </summary>
@@ -69,6 +71,16 @@ namespace Jacmazon_ECommerce.JWT
         public DateTime Refresh_Expired_Date()
         {
             return DateTime.Now.AddSeconds(40);
+        }
+
+        /// <summary>
+        /// 讀取Token資料
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public JwtSecurityToken? ReadToken(string token)
+        {
+            return tokenHandler.ReadToken(token) as JwtSecurityToken;
         }
     }
 }

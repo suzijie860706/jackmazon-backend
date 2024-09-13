@@ -16,6 +16,7 @@ using Serilog;
 using Jacmazon_ECommerce.ViewModels;
 using AutoMapper;
 using Jacmazon_ECommerce.ActionFilter;
+using System.IdentityModel.Tokens.Jwt;
 
 var builder = WebApplication.CreateBuilder(args);
 

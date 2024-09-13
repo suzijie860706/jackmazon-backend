@@ -12,12 +12,12 @@ namespace Jacmazon_ECommerce.Services
             _repository = userRepository;
         }
 
-        public async Task<int> CreateUserAsync(User user)
+        public async Task<bool> CreateUserAsync(string email, string password)
         {
             User newUser = new()
             {
-                Email = user.Email,
-                Password = user.Password,
+                Email = email,
+                Password = password,
                 Name = "",
                 Rank = 0,
                 Approved = true,

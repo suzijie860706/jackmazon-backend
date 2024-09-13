@@ -7,9 +7,10 @@ namespace Jacmazon_ECommerce.Services
         /// <summary>
         /// 新增帳號
         /// </summary>
-        /// <param name="user"></param>
+        /// <param name="email"></param>
+        /// <param name="password"></param>
         /// <returns></returns>
-        public Task<int> CreateUserAsync(User user);
+        public Task<bool> CreateUserAsync(string email, string password);
 
         /// <summary>
         /// 驗證信箱註冊

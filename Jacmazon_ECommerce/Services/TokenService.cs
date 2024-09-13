@@ -51,8 +51,7 @@ namespace Jacmazon_ECommerce.Services
             Response<string> response = new();
 
             //JWT資訊
-            var tokenHandler = new JwtSecurityTokenHandler();
-            JwtSecurityToken? jwtSecurityToken = tokenHandler.ReadToken(refreshToken) as JwtSecurityToken;
+            JwtSecurityToken? jwtSecurityToken = _jwtSettings.ReadToken(refreshToken);
 
             //Token查詢
             Token? token = (await _repository.FindAsync(u => u.RefreshToken == refreshToken)).FirstOrDefault() ?? null;
@@ -85,23 +84,15 @@ namespace Jacmazon_ECommerce.Services
             return response;
         }
 
-        public async Task<Response<string>> DeleteRefreshTokenAsync(string refreshToken)
+        public async Task<bool> DeleteRefreshTokenAsync(string refreshToken)
         {
-            Response<string> response = new();
-
             //Token查詢
             Token? token = (await _repository.FindAsync(u => u.RefreshToken == refreshToken)).FirstOrDefault() ?? null;
-            if (token == null)
-            {
-                response.Status = (int)HttpStatusCode.Unauthorized;
-                response.Message = "查無此Token";
-                return response;
-            }
 
-            await _repository.DeleteAsync(token.Id);
+            if (token == null) return false;
+            else await _repository.DeleteAsync(token);
 
-            response.SuccessResponse("");
-            return response;
+            return true;
         }
         
     }

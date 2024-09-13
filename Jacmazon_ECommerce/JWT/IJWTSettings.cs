@@ -29,5 +29,12 @@ namespace Jacmazon_ECommerce.JWT
         /// 取得Refresh Token Expired Date
         /// </summary>
         public DateTime Refresh_Expired_Date();
+
+        /// <summary>
+        /// 讀取Token資料
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        JwtSecurityToken? ReadToken(string token);
     }
 }

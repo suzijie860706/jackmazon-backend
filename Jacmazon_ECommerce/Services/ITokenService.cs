@@ -28,6 +28,6 @@ namespace Jacmazon_ECommerce.Services
         /// </summary>
         /// <param name="refreshToken"></param>
         /// <returns></returns>
-        public Task<Response<string>> DeleteRefreshTokenAsync(string refreshToken);
+        public Task<bool> DeleteRefreshTokenAsync(string refreshToken);
     }
 }
