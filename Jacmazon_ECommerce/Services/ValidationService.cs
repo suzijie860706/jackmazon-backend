@@ -1,26 +1,20 @@
-﻿using Jacmazon_ECommerce.Data;
-using Jacmazon_ECommerce.Models.LoginContext;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace Jacmazon_ECommerce.Extensions
+namespace Jacmazon_ECommerce.Services
 {
-    /// <summary>
-    /// Email驗證格式
-    /// </summary>
-    public class EmailValidateAttribute : ValidationAttribute
+    public class ValidationService : IValidationService
     {
-        /// <summary>錯誤訊息</summary>
-        public string _errorMessage = string.Empty;
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        /// <summary>
+        /// Email驗證格式
+        /// </summary>
+        public bool IsValidEmail(string email)
         {
-            string email = value?.ToString() ?? "";
             //驗證格式
             if (string.IsNullOrWhiteSpace(email))
             {
-                return new ValidationResult(_errorMessage);
+                return false;
             }
 
             try
@@ -43,35 +37,29 @@ namespace Jacmazon_ECommerce.Extensions
 
                 if (Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250)))
                 {
-                    return ValidationResult.Success;
+                    return true;
                 }
                 else
                 {
-                    return new ValidationResult(_errorMessage);
+                    return false;
                 }
             }
+
             catch (Exception)
             {
                 throw;
             }
-            //return base.IsValid(value, validationContext);
         }
-    }
 
-    /// <summary>
-    /// Phone驗證格式
-    /// </summary>
-    public class PhoneValidateAttribute : ValidationAttribute
-    {
-        /// <summary>錯誤訊息</summary>
-        public string _errorMessage = string.Empty;
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        /// <summary>
+        /// Phone驗證格式
+        /// </summary>
+        public bool IsValidPhone(string phone)
         {
-            string phone = value?.ToString() ?? "";
             //驗證格式
             if (string.IsNullOrWhiteSpace(phone))
             {
-                return new ValidationResult(_errorMessage);
+                return false;
             }
 
             try
@@ -79,18 +67,18 @@ namespace Jacmazon_ECommerce.Extensions
                 //格式驗證
                 if (!Regex.IsMatch(phone, @"^09[0-9]{8}$"))
                 {
-                    return new ValidationResult(_errorMessage);
+                    return false;
                 }
                 else
                 {
-                    return ValidationResult.Success;
+                    return true;
                 }
             }
             catch (Exception)
             {
                 throw;
             }
-            //return base.IsValid(value, validationContext);
         }
     }
 }
+

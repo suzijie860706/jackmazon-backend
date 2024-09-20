@@ -1,4 +1,7 @@
-﻿namespace Jacmazon_ECommerce.Models.LoginContext;
+﻿using System;
+using System.Collections.Generic;
+
+namespace Jacmazon_ECommerce.Models.LoginContext;
 
 public partial class User
 {
@@ -13,6 +16,11 @@ public partial class User
     /// 密碼
     /// </summary>
     public string Password { get; set; } = null!;
+
+    /// <summary>
+    /// 密碼鹽
+    /// </summary>
+    public byte[] Salt { get; set; } = null!;
 
     /// <summary>
     /// 名稱

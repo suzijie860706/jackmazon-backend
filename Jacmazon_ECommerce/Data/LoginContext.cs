@@ -22,12 +22,16 @@ public partial class LoginContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK_Refresh_Tokens");
 
+            entity.HasIndex(e => e.RefreshToken, "IX_Tokens").IsUnique();
+
             entity.Property(e => e.Id)
                 .HasComment("")
                 .HasColumnName("id");
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
             entity.Property(e => e.ExpiredDate).HasColumnType("datetime");
-            entity.Property(e => e.RefreshToken).HasComment("長期Token");
+            entity.Property(e => e.RefreshToken)
+                .HasMaxLength(256)
+                .HasComment("長期Token");
             entity.Property(e => e.UpdatedDate).HasColumnType("datetime");
         });
 
@@ -53,6 +57,9 @@ public partial class LoginContext : DbContext
                 .HasMaxLength(20)
                 .HasComment("電話");
             entity.Property(e => e.Rank).HasComment("權限");
+            entity.Property(e => e.Salt)
+                .HasMaxLength(16)
+                .IsFixedLength();
             entity.Property(e => e.UpdateDate)
                 .HasComment("更新日期")
                 .HasColumnType("datetime");

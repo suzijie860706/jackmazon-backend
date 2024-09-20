@@ -29,6 +29,12 @@ public class UserMetaData
     public string Password { get; set; } = null!;
 
     /// <summary>
+    /// 密碼鹽
+    /// </summary>
+    [JsonIgnore]
+    public byte[] Salt { get; set; } = null!;
+
+    /// <summary>
     /// 名稱
     /// </summary>
     [JsonIgnore]

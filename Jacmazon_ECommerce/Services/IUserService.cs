@@ -1,4 +1,6 @@
-﻿using Jacmazon_ECommerce.Models.LoginContext;
+﻿using Jacmazon_ECommerce.Models;
+using Jacmazon_ECommerce.Models.LoginContext;
+using Jacmazon_ECommerce.ViewModels;
 
 namespace Jacmazon_ECommerce.Services
 {
@@ -17,21 +19,20 @@ namespace Jacmazon_ECommerce.Services
         /// </summary>
         /// <param name="email"></param>
         /// <returns></returns>
-        public Task<bool> IsEmailRegisteredAsync(string email);
+        public Task<bool> IsEmailNotRegisteredAsync(string email);
 
         /// <summary>
         /// 驗證電話註冊
         /// </summary>
         /// <param name="phone"></param>
         /// <returns></returns>
-        public Task<bool> IsPhoneRegisteredAsync(string phone);
+        public Task<bool> IsPhoneNotRegisteredAsync(string phone);
 
         /// <summary>
         /// 驗證帳號密碼
         /// </summary>
-        /// <param name="email"></param>
-        /// <param name="password"></param>
+        /// <param name="userViewModel"></param>
         /// <returns></returns>
-        public Task<bool> VerifyUserLogin(string email, string password);
+        public Task<Response<string>> UserVerify(UserViewModel userViewModel);
     }
 }

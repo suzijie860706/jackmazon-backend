@@ -66,9 +66,11 @@ builder.Services.AddScoped<ICRUDRepository<Product>, CRUDRepository<Product, Adv
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IHashingPassword, HashingPassword>();
 
-//DI JWT 
+//Common
 builder.Services.AddTransient<IJWTSettings, JWTSettings>();
+builder.Services.AddTransient<IValidationService, ValidationService>();
 
 //AutoMapper DI Profile Class
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

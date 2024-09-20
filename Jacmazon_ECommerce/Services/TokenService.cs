@@ -54,13 +54,14 @@ namespace Jacmazon_ECommerce.Services
             JwtSecurityToken? jwtSecurityToken = _jwtSettings.ReadToken(refreshToken);
 
             //Token查詢
-            Token? token = (await _repository.FindAsync(u => u.RefreshToken == refreshToken)).FirstOrDefault() ?? null;
-            if (token == null || jwtSecurityToken == null)
+            List<Token> tokens = (await _repository.FindAsync(u => u.RefreshToken == refreshToken)).ToList();
+            if (tokens.Count == 0 || jwtSecurityToken == null)
             {
-                response.Status = (int)HttpStatusCode.Unauthorized;
+                response.Status = (int)HttpStatusCode.NotFound;
                 response.Message = "查無此Token";
                 return response;
             }
+            Token token = tokens[0];
 
             if (DateTime.Now > token.ExpiredDate)
             {
@@ -80,16 +81,15 @@ namespace Jacmazon_ECommerce.Services
 
             string accessToken = _jwtSettings.CreateRefreshToken(email);
 
-            response.SuccessResponse(accessToken);
-            return response;
+            return new Response<string>().OkResponse(accessToken);
         }
 
         public async Task<bool> DeleteRefreshTokenAsync(string refreshToken)
         {
             //Token查詢
-            Token? token = (await _repository.FindAsync(u => u.RefreshToken == refreshToken)).FirstOrDefault() ?? null;
+            Token? token = (await _repository.FindAsync(u => u.RefreshToken == refreshToken)).FirstOrDefault();
 
-            if (token == null) return false;
+            if (token == null) return true; //裡面沒有token相當於已刪除
             else await _repository.DeleteAsync(token);
 
             return true;

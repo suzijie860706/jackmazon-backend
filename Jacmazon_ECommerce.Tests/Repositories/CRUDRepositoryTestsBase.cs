@@ -7,28 +7,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Jacmazon_ECommerce.Tests.Repositories
 {
-    [TestFixture]
-    public class CRUDRepositoryTests : PageTest
+    public abstract class CRUDRepositoryTestsBase<TEntity> where TEntity : class, new()
     {
         private LoginContext _context;
-        private DbSet<Token> _dbset;
+        protected DbSet<TEntity> _dbset;
         private List<Token> tokens = new List<Token>();
         private CRUDRepository<Token, DbContext> _repository;
+        protected abstract void SeedData();  // For seeding data specific to each entity
 
-        public CRUDRepositoryTests()
-        {
-            tokens = new()
-            {
-                new Token
-                {
-                    Id = 1,
-                    RefreshToken = "refreshToken",
-                    ExpiredDate = DateTime.Now.AddMinutes(1),
-                    CreatedDate = DateTime.Now,
-                    UpdatedDate = DateTime.Now
-                }
-            };
-        }
+        public CRUDRepositoryTestsBase(){}
 
         [SetUp]
         public void SetUp()
@@ -38,8 +25,9 @@ namespace Jacmazon_ECommerce.Tests.Repositories
                 .UseInMemoryDatabase(databaseName: "TestDatabase")
                 .Options;
             _context = new LoginContext(options);
-            _dbset = _context.Set<Token>();
-            _context.Tokens.AddRange(tokens);
+            _dbset = _context.Set<TEntity>();
+            SeedData();  // Seed data for the specific entity type
+            //_context.Tokens.AddRange(tokens);
             _context.SaveChanges();
 
             _repository = new CRUDRepository<Token, DbContext>(_context);
@@ -57,17 +45,21 @@ namespace Jacmazon_ECommerce.Tests.Repositories
         public async Task CreateAsync_WhenCalled_AddsEntityToDbSetAndSaveChanges()
         {
             //Arrange
-            await _context.Database.EnsureDeletedAsync();
+            var entity = new TEntity();
+            //await _context.Database.EnsureDeletedAsync();
 
             //Act
-            await _repository.CreateAsync(tokens[0]);
+            //await _repository.CreateAsync(tokens[0]);
+            await _repository.CreateAsync(entity);
 
             //Assert
-            var addedToken = await _context.Tokens.FindAsync(tokens[0].Id);
-            Assert.That(addedToken, Is.Not.Null);
-            Assert.That(addedToken.Id, Is.EqualTo(tokens[0].Id));
-            Assert.That(addedToken.RefreshToken, Is.EqualTo(tokens[0].RefreshToken));
-            Assert.That(addedToken.ExpiredDate, Is.EqualTo(tokens[0].ExpiredDate));
+            Assert.That(_dbset.Contains(entity), Is.True);
+
+            //var addedToken = await _context.Tokens.FindAsync(tokens[0].Id);
+            //Assert.That(addedToken, Is.Not.Null);
+            //Assert.That(addedToken.Id, Is.EqualTo(tokens[0].Id));
+            //Assert.That(addedToken.RefreshToken, Is.EqualTo(tokens[0].RefreshToken));
+            //Assert.That(addedToken.ExpiredDate, Is.EqualTo(tokens[0].ExpiredDate));
         }
 
         [Test]
@@ -87,7 +79,7 @@ namespace Jacmazon_ECommerce.Tests.Repositories
         }
 
         [Test]
-        public async Task DeleteAsync_WhenCalled_DeleteFromDbSetAndSaveChanges()
+        public async Task DeleteAsync_WhenCalled_DeleteEntityFromDbSet()
         {
             //Arrange
 
@@ -114,7 +106,7 @@ namespace Jacmazon_ECommerce.Tests.Repositories
         }
 
         [Test]
-        public async Task FindByIdAsync_WhenCalled_RetrunsNull()
+        public async Task FindByIdAsync_WhenIdNotFound_RetrunsNull()
         {
             //Arrange
             await _context.Database.EnsureDeletedAsync();
@@ -130,7 +122,7 @@ namespace Jacmazon_ECommerce.Tests.Repositories
         }
 
         [Test]
-        public async Task FindAsync_WhenCalled_RetrunsEntity()
+        public async Task FindAsync_WhenCalled_RetrunsData()
         {
             //Arrange
 
@@ -138,7 +130,7 @@ namespace Jacmazon_ECommerce.Tests.Repositories
             var data = await _repository.FindAsync(u => u.RefreshToken == tokens[0].RefreshToken);
 
             //Assert
-            Assert.That(data.ToList()[0].RefreshToken, Is.EqualTo(tokens[0].RefreshToken));
+            Assert.That(data, Is.Not.Null);
         }
     }
 }

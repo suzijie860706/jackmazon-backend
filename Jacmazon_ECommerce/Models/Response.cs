@@ -1,4 +1,6 @@
-﻿using System.Net;
+﻿using Azure;
+using System.Net;
+using System.Net.Mail;
 
 namespace Jacmazon_ECommerce.Models
 {
@@ -10,22 +12,52 @@ namespace Jacmazon_ECommerce.Models
     {
         public bool Success { get; set; } = false;
 
-        public int Status { get; set; }
+        public int? Status { get; set; } = null;
 
         public string? Message { get; set; } = "";
 
         public T? Data { get; set; } = default;
 
-        /// <summary>
-        /// 回傳成功
-        /// </summary>
-        /// <param name="data"></param>
-        public void SuccessResponse(T data)
+        public Response()
         {
-            Success = true;
-            Status = (int)HttpStatusCode.OK;
-            Message = "";
-            Data = data;
+        }
+
+        public Response(bool success)
+        {
+            if (success)
+            {
+                Status = (int)HttpStatusCode.OK;
+            }
+            Success = success;
+        }
+
+        public Response<T> OkResponse(T data)
+        {
+            return new Response<T>
+            {
+                Status = (int)HttpStatusCode.OK,
+                Success = true,
+                Data = data
+            };
+        }
+
+        public Response<T> ErrorResponse(int httpStatusCode, string message)
+        {
+            return new Response<T>
+            {
+                Status = httpStatusCode,
+                Success = false,
+                Message = message
+            };
+        }
+
+        public Response<T> ErrorResponse(string message)
+        {
+            return new Response<T>
+            {
+                Success = false,
+                Message = message
+            };
         }
     }
 }

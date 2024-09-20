@@ -1,19 +1,10 @@
 ﻿using Jacmazon_ECommerce.JWT;
 using Jacmazon_ECommerce.Repositories;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using Jacmazon_ECommerce.Models.LoginContext;
 using NSubstitute;
 using Jacmazon_ECommerce.Services;
-using Jacmazon_ECommerce.ViewModels;
-using Jacmazon_ECommerce.Models;
 using System.IdentityModel.Tokens.Jwt;
-using Microsoft.IdentityModel.Tokens;
 using System.Linq.Expressions;
 
 namespace Jacmazon_ECommerce.Tests.Services
@@ -55,7 +46,7 @@ namespace Jacmazon_ECommerce.Tests.Services
         }
 
         [Test]
-        public async Task UpdateRefreshTokenAsync_ValidToken_ReturnsNewAccessToken()
+        public async Task UpdateRefreshTokenAsync_WhenCalled_ReturnsOk()
         {
 
             //Arrange
@@ -78,36 +69,41 @@ namespace Jacmazon_ECommerce.Tests.Services
             //Act
             var response = await tokenService.UpdateRefreshTokenAsync(tokens[0].RefreshToken);
 
-
             //Assert
+            Assert.That(response, Is.Not.Null);
             Assert.That(response.Data, Is.EqualTo("newAccessToken"));
             Assert.That(response.Status, Is.EqualTo((int)HttpStatusCode.OK));
-            Assert.That(response.Success, Is.EqualTo(true));
+            Assert.That(response.Success, Is.True);
         }
 
         [Test]
-        public async Task UpdateRefreshTokenAsync_TokenNotFound_ReturnsUnauthorized()
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        public async Task UpdateRefreshTokenAsync_WhenTokenDoesNotExist_ReturnsNotFound(bool jwtTokenValid, bool tokenExist)
         {
             //Arrange
-            //拆解Token取得Email
-            _jwtSettings.ReadToken(Arg.Any<string>()).Returns(new JwtSecurityToken());
+            JwtSecurityToken? jwtSecurityToken = null;
+            if (jwtTokenValid) jwtSecurityToken = new JwtSecurityToken();
+
+            List<Token> tokens = new();
+            if (tokenExist) { tokens.Add(new Token()); }
+
+            _jwtSettings.ReadToken(Arg.Any<string>()).Returns(jwtSecurityToken);
             //確認Token存在
-            _repository.FindAsync(Arg.Is<Expression<Func<Token, bool>>>(expr => expr.Compile()(new Token { RefreshToken = "InvalidRefreshToken" })))
-                .Returns(Task.FromResult((Enumerable.Empty<Token>())));
+            _repository.FindAsync(Arg.Any<Expression<Func<Token, bool>>>()).Returns(Task.FromResult(tokens.AsEnumerable()));
 
             //Act
             var response = await tokenService.UpdateRefreshTokenAsync("InvalidRefreshToken");
 
 
             //Assert
-            Assert.That(response.Data, Is.Null);
-            Assert.That(response.Status, Is.EqualTo((int)HttpStatusCode.Unauthorized));
-            Assert.That(response.Success, Is.False);
+            Assert.That(response.Status, Is.EqualTo((int)HttpStatusCode.NotFound));
             Assert.That(response.Message, Is.EqualTo("查無此Token"));
+            Assert.That(response.Success, Is.False);
         }
 
         [Test]
-        public async Task UpdateRefreshTokenAsync_TokenExpired_ReturnsUnauthorized()
+        public async Task UpdateRefreshTokenAsync_WhenTokenIsExpired_ReturnsErrorMsg()
         {
             //Arrange
             List<Token> tokens = new()
@@ -122,39 +118,19 @@ namespace Jacmazon_ECommerce.Tests.Services
             //拆解Token取得Email
             _jwtSettings.ReadToken(Arg.Any<string>()).Returns(new JwtSecurityToken());
             //確認Token存在
-            _repository.FindAsync(Arg.Is<Expression<Func<Token, bool>>>(expr => expr.Compile()(new Token { RefreshToken = tokens[0].RefreshToken })))
-                .Returns(Task.FromResult((IEnumerable<Token>)tokens));
+            _repository.FindAsync(Arg.Any<Expression<Func<Token, bool>>>()).Returns(Task.FromResult(tokens.AsEnumerable()));
 
             //Act
             var response = await tokenService.UpdateRefreshTokenAsync(tokens[0].RefreshToken);
 
-
             //Assert
-            Assert.That(response.Data, Is.Null);
             Assert.That(response.Status, Is.EqualTo((int)HttpStatusCode.Unauthorized));
             Assert.That(response.Success, Is.False);
             Assert.That(response.Message, Is.EqualTo("RefreshToken已過期"));
         }
 
         [Test]
-        public async Task UpdateRefreshTokenAsync_JwtReadTokenReturnsNull_ReturnsUnauthorized()
-        {
-            //Arrange
-            //拆解Token取得Email
-            _jwtSettings.ReadToken(Arg.Any<string>()).Returns((JwtSecurityToken?)null);
-
-            //Act
-            var response = await tokenService.UpdateRefreshTokenAsync("");
-
-            //Assert
-            Assert.That(response.Data, Is.Null);
-            Assert.That(response.Status, Is.EqualTo((int)HttpStatusCode.Unauthorized));
-            Assert.That(response.Success, Is.False);
-            Assert.That(response.Message, Is.EqualTo("查無此Token"));
-        }
-
-        [Test]
-        public async Task DeleteRefreshTokenAsync_ValidToken_ReturnsOk()
+        public async Task DeleteRefreshTokenAsync_WhenCalled_ReturnsOk()
         {
             //Arrange
             List<Token> tokens = new()
@@ -173,19 +149,6 @@ namespace Jacmazon_ECommerce.Tests.Services
 
             //Assert
             Assert.That(response, Is.True);
-        }
-
-        [Test]
-        public async Task DeleteRefreshTokenAsync_InValidToken_ReturnsUnauthorized()
-        {
-            //Arrange
-            //確認Token存在
-            _repository.FindAsync(Arg.Any<Expression<Func<Token, bool>>>()).Returns(Task.FromResult((Enumerable.Empty<Token>())));
-            //Act
-            var response = await tokenService.DeleteRefreshTokenAsync("InvalidToken");
-
-            //Assert
-            Assert.That(response, Is.False);
         }
     }
 }

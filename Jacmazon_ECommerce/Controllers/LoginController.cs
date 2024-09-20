@@ -7,6 +7,7 @@ using Jacmazon_ECommerce.Models.LoginContext;
 using Jacmazon_ECommerce.ViewModels;
 using Jacmazon_ECommerce.Extensions;
 using AutoMapper;
+using System.Runtime.Intrinsics.Arm;
 
 namespace Jacmazon_ECommerce.Controllers
 {
@@ -15,18 +16,19 @@ namespace Jacmazon_ECommerce.Controllers
     public class LoginController : ControllerBase
     {
         private readonly IAntiforgery _antiforgery;
+        private readonly IValidationService _validationService;
         private readonly IUserService _userService;
         private readonly ITokenService _tokenService;
-        private readonly IProductService _productService;
+        
         private readonly IMapper _mapper;
 
-        public LoginController(IAntiforgery antiforgery, IUserService userService,
-            ITokenService tokenService, IProductService productService, IMapper mapper)
+        public LoginController(IAntiforgery antiforgery, IUserService userService, IValidationService validationService,
+            ITokenService tokenService, IMapper mapper)
         {
             _antiforgery = antiforgery;
             _userService = userService;
+            _validationService = validationService;
             _tokenService = tokenService;
-            _productService = productService;
             _mapper = mapper;
         }
 
@@ -77,9 +79,11 @@ namespace Jacmazon_ECommerce.Controllers
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> Login([FromBody] UserViewModel user)
         {
+            System.Security.Cryptography.Aes aes = System.Security.Cryptography.Aes.Create();
+            System.Security.Cryptography.RSA rsa = System.Security.Cryptography.RSA.Create();
             // 驗證帳密
-            bool isValidUser = await _userService.VerifyUserLogin(user.Email, user.Password);
-            if (!isValidUser)
+            Response<string> response = await _userService.UserVerify(user);
+            if (!response.Success)
             {
                 return Ok(new Response<string>
                 {
@@ -110,7 +114,7 @@ namespace Jacmazon_ECommerce.Controllers
         public async Task<IActionResult> CreateAccount([FromBody] UserViewModel user)
         {
             //驗證Email
-            bool isEmailRegistered = await _userService.IsEmailRegisteredAsync(user.Email);
+            bool isEmailRegistered = await _userService.IsEmailNotRegisteredAsync(user.Email);
             if (isEmailRegistered)
             {
                 return Ok(new Response<string>
@@ -128,25 +132,6 @@ namespace Jacmazon_ECommerce.Controllers
                 Success = true,
                 Status = StatusCodes.Status200OK,
             });
-        }
-
-        /// <summary>
-        /// 取得產品資料
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet("ProductList")]
-        [Authorize]
-        public async Task<IActionResult> ProductList()
-        {
-            IEnumerable<ProductViewModel> productResponseDtos = await _productService.GetAllProducts();
-
-            return Ok(new Response<IEnumerable<ProductViewModel>>
-            {
-                Success = true,
-                Status = StatusCodes.Status200OK,
-                Data = productResponseDtos
-            });
-
         }
 
         /// <summary>
@@ -177,24 +162,13 @@ namespace Jacmazon_ECommerce.Controllers
         [HttpPost("Logout")]
         public async Task<IActionResult> Logout([FromBody] string refreshToken)
         {
-            bool result = await _tokenService.DeleteRefreshTokenAsync(refreshToken);
-            if (!result)
+            await _tokenService.DeleteRefreshTokenAsync(refreshToken);
+
+            return Ok(new Response<string>
             {
-                return Ok(new Response<string>
-                {
-                    Success = false,
-                    Status = StatusCodes.Status401Unauthorized,
-                    Message = "查無此Token"
-                });
-            }
-            else
-            {
-                return Ok(new Response<string>
-                {
-                    Success = true,
-                    Status = StatusCodes.Status200OK,
-                });
-            }
+                Success = true,
+                Status = StatusCodes.Status200OK,
+            });
         }
 
         /// <summary>
@@ -205,10 +179,7 @@ namespace Jacmazon_ECommerce.Controllers
         [HttpPost("Email")]
         public async Task<IActionResult> Email([FromBody] string email)
         {
-            EmailValidateAttribute emailValidateAttribute = new();
-            bool isEmailValid = emailValidateAttribute.IsValid(email);
-
-            if (isEmailValid)
+            if (!_validationService.IsValidEmail(email))
             {
                 return Ok(new Response<string>
                 {
@@ -218,8 +189,7 @@ namespace Jacmazon_ECommerce.Controllers
                 });
             }
 
-            bool isRegistered = await _userService.IsEmailRegisteredAsync(email);
-            if (isRegistered)
+            if (!await _userService.IsEmailNotRegisteredAsync(email))
             {
                 return Ok(new Response<string>
                 {
@@ -229,11 +199,8 @@ namespace Jacmazon_ECommerce.Controllers
                 });
             }
 
-            return Ok(new Response<string>
-            {
-                Success = true,
-                Status = StatusCodes.Status200OK,
-            });
+            return Ok(new Response<string>(true));
+            
         }
 
         /// <summary>
@@ -244,9 +211,7 @@ namespace Jacmazon_ECommerce.Controllers
         [HttpPost("phone")]
         public async Task<IActionResult> Phone([FromBody] string phone)
         {
-            PhoneValidateAttribute phoneValidateAttribute = new();
-            bool isPhoneValid = phoneValidateAttribute.IsValid(phone);
-            if (isPhoneValid)
+            if (!_validationService.IsValidPhone(phone))
             {
                 return Ok(new Response<string>
                 {
@@ -256,8 +221,7 @@ namespace Jacmazon_ECommerce.Controllers
                 });
             }
 
-            bool isRegistered = await _userService.IsPhoneRegisteredAsync(phone);
-            if (isRegistered)
+            if (!await _userService.IsPhoneNotRegisteredAsync(phone))
             {
                 return Ok(new Response<string>
                 {

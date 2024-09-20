@@ -1,83 +1,44 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Jacmazon_ECommerce.Services;
+using Jacmazon_ECommerce.ViewModels;
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Jacmazon_ECommerce.Models;
+using Jacmazon_ECommerce.Models.LoginContext;
+using Jacmazon_ECommerce.Extensions;
 
 namespace Jacmazon_ECommerce.Controllers
 {
-    public class ProductController : Controller
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ProductController : ControllerBase
     {
-        // GET: ProductController1
-        public ActionResult Index()
+        private readonly IProductService _productService;
+
+        public ProductController(IProductService productService)
         {
-            return View();
+            _productService = productService;
         }
 
-        // GET: ProductController1/Details/5
-        public ActionResult Details(int id)
+        /// <summary>
+        /// 取得產品資料
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("ProductList")]
+        [Authorize]
+        public async Task<IActionResult> ProductList()
         {
-            return View();
-        }
+            IEnumerable<ProductViewModel> productResponseDtos = await _productService.GetAllProducts();
 
-        // GET: ProductController1/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: ProductController1/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
-        {
-            try
+            return Ok(new Response<IEnumerable<ProductViewModel>>
             {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
+                Success = true,
+                Status = StatusCodes.Status200OK,
+                Data = productResponseDtos
+            });
 
-        // GET: ProductController1/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
-
-        // POST: ProductController1/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: ProductController1/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: ProductController1/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
         }
     }
 }
