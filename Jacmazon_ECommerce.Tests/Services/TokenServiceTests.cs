@@ -90,7 +90,7 @@ namespace Jacmazon_ECommerce.Tests.Services
 
             _jwtSettings.ReadToken(Arg.Any<string>()).Returns(jwtSecurityToken);
             //確認Token存在
-            _repository.FindAsync(Arg.Any<Expression<Func<Token, bool>>>()).Returns(Task.FromResult(tokens.AsEnumerable()));
+            _repository.FindAsync(Arg.Any<Expression<Func<Token, bool>>>()).Returns(tokens.AsEnumerable());
 
             //Act
             var response = await tokenService.UpdateRefreshTokenAsync("InvalidRefreshToken");

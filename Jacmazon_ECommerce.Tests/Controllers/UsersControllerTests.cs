@@ -8,12 +8,13 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
 using System.Net;
+using Microsoft.IdentityModel.Protocols.WsTrust;
 
 namespace Jacmazon_ECommerce.Tests.Controllers
 {
     [Parallelizable(ParallelScope.Self)]
     [TestFixture]
-    public class LoginControllerTests : PageTest
+    public class UsersControllerTests : PageTest
     {
         private IAntiforgery _antiforgery;
         private IUserService _userService;
@@ -22,7 +23,7 @@ namespace Jacmazon_ECommerce.Tests.Controllers
         private IMapper _mapper;
 
 
-        private LoginController _controller;
+        private UsersController _controller;
         private MapperConfiguration config;
 
         [SetUp]
@@ -41,7 +42,7 @@ namespace Jacmazon_ECommerce.Tests.Controllers
 
             _mapper = config.CreateMapper();
 
-            _controller = new LoginController(_antiforgery, _userService, _validationService, _tokenService, _mapper);
+            _controller = new UsersController(_antiforgery, _userService, _validationService, _tokenService, _mapper);
         }
 
 
@@ -124,7 +125,7 @@ namespace Jacmazon_ECommerce.Tests.Controllers
                 Password = "password"
             };
 
-            _userService.IsEmailNotRegisteredAsync(userViewModel.Email).Returns(false);
+            _userService.IsEmailNotRegisteredAsync(userViewModel.Email).Returns(true);
 
             //Act
             var okObjectResult = await _controller.CreateAccount(userViewModel) as OkObjectResult;
@@ -147,7 +148,7 @@ namespace Jacmazon_ECommerce.Tests.Controllers
                 Password = "password"
             };
 
-            _userService.IsEmailNotRegisteredAsync(userViewModel.Email).Returns(Task.FromResult(true));
+            _userService.IsEmailNotRegisteredAsync(userViewModel.Email).Returns(false);
 
             //Act
             var okObjectResult = await _controller.CreateAccount(userViewModel) as OkObjectResult;

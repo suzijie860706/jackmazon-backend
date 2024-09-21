@@ -13,7 +13,7 @@ namespace Jacmazon_ECommerce.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class LoginController : ControllerBase
+    public class UsersController : ControllerBase
     {
         private readonly IAntiforgery _antiforgery;
         private readonly IValidationService _validationService;
@@ -22,7 +22,7 @@ namespace Jacmazon_ECommerce.Controllers
         
         private readonly IMapper _mapper;
 
-        public LoginController(IAntiforgery antiforgery, IUserService userService, IValidationService validationService,
+        public UsersController(IAntiforgery antiforgery, IUserService userService, IValidationService validationService,
             ITokenService tokenService, IMapper mapper)
         {
             _antiforgery = antiforgery;
@@ -79,8 +79,6 @@ namespace Jacmazon_ECommerce.Controllers
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> Login([FromBody] UserViewModel user)
         {
-            System.Security.Cryptography.Aes aes = System.Security.Cryptography.Aes.Create();
-            System.Security.Cryptography.RSA rsa = System.Security.Cryptography.RSA.Create();
             // 驗證帳密
             Response<string> response = await _userService.UserVerify(user);
             if (!response.Success)
@@ -114,8 +112,8 @@ namespace Jacmazon_ECommerce.Controllers
         public async Task<IActionResult> CreateAccount([FromBody] UserViewModel user)
         {
             //驗證Email
-            bool isEmailRegistered = await _userService.IsEmailNotRegisteredAsync(user.Email);
-            if (isEmailRegistered)
+            bool isValid = await _userService.IsEmailNotRegisteredAsync(user.Email);
+            if (!isValid)
             {
                 return Ok(new Response<string>
                 {

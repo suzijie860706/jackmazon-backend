@@ -9,8 +9,6 @@ namespace Jacmazon_ECommerce.Tests.Repositories
     [TestFixture]
     public class TokenRepositoryTests : CRUDRepositoryTestsBase<Token>
     {
-        public TokenRepositoryTests() : base(){ }
-
         protected override void SeedData()
         {
             _dbset.Add(new Token

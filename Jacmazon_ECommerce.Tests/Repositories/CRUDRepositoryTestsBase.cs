@@ -3,6 +3,7 @@ using Jacmazon_ECommerce.Models.LoginContext;
 using Jacmazon_ECommerce.Repositories;
 using Jacmazon_ECommerce.Services;
 using Microsoft.EntityFrameworkCore;
+using NSubstitute;
 
 
 namespace Jacmazon_ECommerce.Tests.Repositories
@@ -10,12 +11,9 @@ namespace Jacmazon_ECommerce.Tests.Repositories
     public abstract class CRUDRepositoryTestsBase<TEntity> where TEntity : class, new()
     {
         private LoginContext _context;
+        private CRUDRepository<TEntity, DbContext> _repository;
         protected DbSet<TEntity> _dbset;
-        private List<Token> tokens = new List<Token>();
-        private CRUDRepository<Token, DbContext> _repository;
         protected abstract void SeedData();  // For seeding data specific to each entity
-
-        public CRUDRepositoryTestsBase(){}
 
         [SetUp]
         public void SetUp()
@@ -25,12 +23,13 @@ namespace Jacmazon_ECommerce.Tests.Repositories
                 .UseInMemoryDatabase(databaseName: "TestDatabase")
                 .Options;
             _context = new LoginContext(options);
+
             _dbset = _context.Set<TEntity>();
-            SeedData();  // Seed data for the specific entity type
-            //_context.Tokens.AddRange(tokens);
+            //Seed資料
+            SeedData();  
             _context.SaveChanges();
 
-            _repository = new CRUDRepository<Token, DbContext>(_context);
+            _repository = new CRUDRepository<TEntity, DbContext>(_context);
         }
 
         [TearDown]
@@ -45,51 +44,44 @@ namespace Jacmazon_ECommerce.Tests.Repositories
         public async Task CreateAsync_WhenCalled_AddsEntityToDbSetAndSaveChanges()
         {
             //Arrange
-            var entity = new TEntity();
-            //await _context.Database.EnsureDeletedAsync();
+            var entity = await _repository.FindByIdAsync(1);
+            if (entity == null) throw new NullReferenceException();
+            _context.Database.EnsureDeleted();
+            _context.ChangeTracker.Clear();
 
             //Act
-            //await _repository.CreateAsync(tokens[0]);
             await _repository.CreateAsync(entity);
 
             //Assert
             Assert.That(_dbset.Contains(entity), Is.True);
-
-            //var addedToken = await _context.Tokens.FindAsync(tokens[0].Id);
-            //Assert.That(addedToken, Is.Not.Null);
-            //Assert.That(addedToken.Id, Is.EqualTo(tokens[0].Id));
-            //Assert.That(addedToken.RefreshToken, Is.EqualTo(tokens[0].RefreshToken));
-            //Assert.That(addedToken.ExpiredDate, Is.EqualTo(tokens[0].ExpiredDate));
         }
 
         [Test]
         public async Task UpdateAsync_WhenCalled_UpdateToDbSetAndSaveChanges()
         {
             //Arrange
-            tokens[0].RefreshToken = "newRefreshToken";
+            var entity = await _repository.FindByIdAsync(1);
+            if (entity == null) throw new NullReferenceException();
 
             //Act
-            int count = await _repository.UpdateAsync(tokens[0]);
+            await _repository.UpdateAsync(entity);
 
             //Assert
-            var updatedToken = await _context.Tokens.FindAsync(tokens[0].Id);
-            Assert.That(updatedToken, Is.Not.Null);
-            Assert.That(updatedToken.Id, Is.EqualTo(tokens[0].Id));
-            Assert.That(updatedToken.RefreshToken, Is.EqualTo("newRefreshToken"));
+            Assert.That(_dbset.Contains(entity), Is.True);
         }
 
         [Test]
         public async Task DeleteAsync_WhenCalled_DeleteEntityFromDbSet()
         {
             //Arrange
+            var entity = await _repository.FindByIdAsync(1);
+            if (entity == null) throw new NullReferenceException();
 
             //Act
-            int count = await _repository.DeleteAsync(tokens[0]);
+            int count = await _repository.DeleteAsync(entity);
 
             //Assert
-            var deletedToken = await _context.Tokens.FindAsync(tokens[0].Id);
-            Assert.That(deletedToken, Is.Null);
-            Assert.That(_context.Tokens.Count, Is.EqualTo(0));
+            Assert.That(_dbset.Contains(entity), Is.False);
         }
 
         [Test]
@@ -102,20 +94,15 @@ namespace Jacmazon_ECommerce.Tests.Repositories
 
             //Assert
             Assert.That(entity, Is.Not.Null);
-            Assert.That(entity.Id, Is.EqualTo(1));
         }
 
         [Test]
         public async Task FindByIdAsync_WhenIdNotFound_RetrunsNull()
         {
             //Arrange
-            await _context.Database.EnsureDeletedAsync();
-            _context.ChangeTracker.Clear();
-
-            _repository = new CRUDRepository<Token, DbContext>(_context);
 
             //Act
-            var entity = await _repository.FindByIdAsync(1);
+            var entity = await _repository.FindByIdAsync(99);
 
             //Assert
             Assert.That(entity, Is.Null);
@@ -127,10 +114,11 @@ namespace Jacmazon_ECommerce.Tests.Repositories
             //Arrange
 
             //Act
-            var data = await _repository.FindAsync(u => u.RefreshToken == tokens[0].RefreshToken);
+            var data = await _repository.FindAsync(x => true);
 
             //Assert
             Assert.That(data, Is.Not.Null);
+            Assert.That(data.Count, Is.GreaterThan(0));
         }
     }
 }

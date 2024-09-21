@@ -2,7 +2,7 @@
 using System.Text.Json.Serialization;
 using AutoMapper;
 using AutoMapper.Configuration.Annotations;
-using Jacmazon_ECommerce.Extensions;
+using Jacmazon_ECommerce.Attributes;
 
 namespace Jacmazon_ECommerce.Models.LoginContext;
 
@@ -16,8 +16,8 @@ public class UserMetaData
     /// 電子信箱
     /// </summary>
     [Required(ErrorMessage = "請輸入Email地址")]
-    [Length(minimumLength: 6, maximumLength: 30, ErrorMessage = "很抱歉，使用者名稱長度必須介於 6 到 30 個半形字元之間")]
     [EmailValidate(ErrorMessage = "Email格式錯誤")]
+    [EmailLength(minimumLength = 6, maximumLength = 30)]
     public string Email { get; set; } = null!;
 
     /// <summary>

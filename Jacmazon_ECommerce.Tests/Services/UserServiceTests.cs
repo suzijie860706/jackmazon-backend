@@ -44,5 +44,32 @@ namespace Jacmazon_ECommerce.Tests.Services
             Assert.That(result, Is.True);
         }
 
+        [Test]
+        public async Task IsEmailNotRegisteredAsync_EmailNotRegistered_ReturnsTrue()
+        {
+            //Arrange
+            string email = "email";
+            _repository.FindAsync(Arg.Any<Expression<Func<User, bool>>>()).Returns(Enumerable.Empty<User>());
+
+            //Act
+            bool isValid = await _userService.IsEmailNotRegisteredAsync(email);
+
+            //Assert
+            Assert.That(isValid, Is.True);
+        }
+
+        [Test]
+        public async Task IsEmailNotRegisteredAsync_EmailRegistered_ReturnsFalse()
+        {
+            //Arrange
+            string email = "email";
+            _repository.FindAsync(Arg.Any<Expression<Func<User, bool>>>()).Returns(new List<User>() { new User { Id = 1 } });
+
+            //Act
+            bool isValid = await _userService.IsEmailNotRegisteredAsync(email);
+
+            //Assert
+            Assert.That(isValid, Is.False);
+        }
     }
 }

@@ -9,8 +9,20 @@ namespace Jacmazon_ECommerce.ActionFilter
     /// </summary>
     public class ValidatorActionFilter : IActionFilter
     {
+        private readonly ILogger<LoggingActionFilter> _logger;
+
+        public ValidatorActionFilter(ILogger<LoggingActionFilter> logger)
+        {
+            _logger = logger;
+        }
         public void OnActionExecuting(ActionExecutingContext filterContext)
         {
+            string? controllerName = filterContext.ActionDescriptor.RouteValues["controller"];
+            string? actionName = filterContext.ActionDescriptor.RouteValues["action"];
+            _logger.LogInformation("{Controller}/{Action} 參數驗證 Start",
+                controllerName, actionName);
+
+
             var modelState = filterContext.ModelState;
             if (!modelState.IsValid)
             {
@@ -31,6 +43,13 @@ namespace Jacmazon_ECommerce.ActionFilter
                 };
 
                 filterContext.Result = new OkObjectResult(response);
+                _logger.LogInformation("{Controller}/{Action} 參數驗證 Error",
+                controllerName, actionName);
+            }
+            else
+            {
+                _logger.LogInformation("{Controller}/{Action} 參數驗證 End",
+                controllerName, actionName);
             }
         }
 
