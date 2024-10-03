@@ -23,7 +23,7 @@ namespace Jacmazon_ECommerce.Tests.Controllers
         private IMapper _mapper;
 
 
-        private UsersController _controller;
+        private UserController _controller;
         private MapperConfiguration config;
 
         [SetUp]
@@ -42,7 +42,7 @@ namespace Jacmazon_ECommerce.Tests.Controllers
 
             _mapper = config.CreateMapper();
 
-            _controller = new UsersController(_antiforgery, _userService, _validationService, _tokenService, _mapper);
+            _controller = new UserController(_antiforgery, _userService, _validationService, _tokenService, _mapper);
         }
 
 
@@ -65,7 +65,7 @@ namespace Jacmazon_ECommerce.Tests.Controllers
         public async Task Login_WhenCalled_ReturnsOk()
         {
             //Arrange
-            UserViewModel userViewModel = new()
+            UserParameter userViewModel = new()
             {
                 Email = "email",
                 Password = "password"
@@ -95,7 +95,7 @@ namespace Jacmazon_ECommerce.Tests.Controllers
         public async Task Login_WhenCredentialsAreInvalid_ReturnsUnauthorized()
         {
             //Arrange
-            UserViewModel userViewModel = new()
+            UserParameter userViewModel = new()
             {
                 Email = "email",
                 Password = "password"
@@ -119,7 +119,7 @@ namespace Jacmazon_ECommerce.Tests.Controllers
         public async Task CreateAccount_WhenCalled_ReturnsOk()
         {
             //Arrange
-            UserViewModel userViewModel = new()
+            UserParameter userViewModel = new()
             {
                 Email = "email",
                 Password = "password"
@@ -142,7 +142,7 @@ namespace Jacmazon_ECommerce.Tests.Controllers
         public async Task CreateAccount_WhenAccountExist_ReturnsUnauthorized()
         {
             //Arrange
-            UserViewModel userViewModel = new()
+            UserParameter userViewModel = new()
             {
                 Email = "email",
                 Password = "password"
@@ -166,12 +166,15 @@ namespace Jacmazon_ECommerce.Tests.Controllers
         public async Task Logout_WhenCalled_ReturnsOk()
         {
             //Arrange
-            string refreshToken = "refreshToken";
+            LogoutParameter logoutParameter = new LogoutParameter()
+            {
+                RefreshToken = "refreshToken"
+            };
 
-            _tokenService.DeleteRefreshTokenAsync(refreshToken).Returns(true);
+            _tokenService.DeleteRefreshTokenAsync(logoutParameter.RefreshToken).Returns(true);
 
             //Act
-            var okObjectResult = await _controller.Logout(refreshToken) as OkObjectResult;
+            var okObjectResult = await _controller.Logout(logoutParameter) as OkObjectResult;
 
             //Assert
             Response<string>? responseData = okObjectResult?.Value as Response<string>;
@@ -214,7 +217,7 @@ namespace Jacmazon_ECommerce.Tests.Controllers
             _userService.IsEmailNotRegisteredAsync(email).Returns(isEmailRegistered);
 
             //Act
-            var okObjectResult = await _controller.Email(email) as OkObjectResult;
+            var okObjectResult = await _controller.VerifyEmail(email) as OkObjectResult;
 
             //Assert
             Response<string>? responseData = okObjectResult?.Value as Response<string>;
@@ -239,7 +242,7 @@ namespace Jacmazon_ECommerce.Tests.Controllers
             _userService.IsPhoneNotRegisteredAsync(phone).Returns(isPhoneRegistered);
 
             //Act
-            var okObjectResult = await _controller.Phone(phone) as OkObjectResult;
+            var okObjectResult = await _controller.VerifyPhone(phone) as OkObjectResult;
 
             //Assert
             Response<string>? responseData = okObjectResult?.Value as Response<string>;

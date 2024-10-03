@@ -8,10 +8,11 @@ using Microsoft.AspNetCore.Mvc;
 using Jacmazon_ECommerce.Models;
 using Jacmazon_ECommerce.Models.LoginContext;
 using Jacmazon_ECommerce.Extensions;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Jacmazon_ECommerce.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class ProductController : ControllerBase
     {
@@ -26,9 +27,9 @@ namespace Jacmazon_ECommerce.Controllers
         /// 取得產品資料
         /// </summary>
         /// <returns></returns>
-        [HttpGet("ProductList")]
+        [HttpGet("List")]
         [Authorize]
-        public async Task<IActionResult> ProductList()
+        public async Task<IActionResult> List()
         {
             IEnumerable<ProductViewModel> productResponseDtos = await _productService.GetAllProducts();
 
@@ -38,7 +39,6 @@ namespace Jacmazon_ECommerce.Controllers
                 Status = StatusCodes.Status200OK,
                 Data = productResponseDtos
             });
-
         }
     }
 }

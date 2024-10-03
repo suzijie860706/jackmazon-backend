@@ -17,6 +17,7 @@ using Jacmazon_ECommerce.ViewModels;
 using AutoMapper;
 using Jacmazon_ECommerce.ActionFilter;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,7 +35,7 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllers();
 
 //停止ModelState自動回傳400過濾器
 builder.Services.Configure<ApiBehaviorOptions>(options =>
@@ -156,11 +157,6 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 
-    //xml文件增加註解
-    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    options.IncludeXmlComments(xmlPath);
-
     //增加Token驗證欄位
     options.AddSecurityDefinition("Bearer",
     new OpenApiSecurityScheme
@@ -189,7 +185,25 @@ builder.Services.AddSwaggerGen(options =>
             }
        });
 
+    //xml文件增加註解
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    options.IncludeXmlComments(xmlPath);
+    //自定義operationID
+    options.CustomOperationIds(e =>
+    {
+        string methodName = e.HttpMethod?.ToLower() ?? "" + " ";
+        if (methodName == "post") methodName = "";
+        return $"{methodName}{e.ActionDescriptor.RouteValues["action"]}";
+    });
+
+    //options.ParameterFilter<SwagParameterFilter>();
+    //增加欄位自定義驗證內容
+    options.SchemaFilter<SwagSchemaFilter>();
+
+    //options.OperationFilter<ExamplesOperationFilter<UserParameterExample>>(); 
 });
+//builder.Services.AddSwaggerGenNewtonsoftSupport(); // explicit opt-in - needs to be placed after AddSwaggerGen()
 #endregion
 
 //builder.Services.Configure
@@ -204,14 +218,16 @@ app.UseLogger();
 #endregion
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+//TODO:IIS發行，暫時關閉
+//if (app.Environment.IsDevelopment()) 
+//{
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+        //c.InjectStylesheet("/swagger-ui/custom.css");
     });
-}
+//}
 
 app.UseStaticFiles();
 

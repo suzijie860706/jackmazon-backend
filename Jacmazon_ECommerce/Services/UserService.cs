@@ -31,8 +31,8 @@ namespace Jacmazon_ECommerce.Services
                 Approved = true,
                 Phone = "",
                 CreateDate = DateTime.Now,
-                UpdateDate = DateTime.Now
-                //Salt = bytes
+                UpdateDate = DateTime.Now,
+                Salt = bytes
             };
 
             return await _repository.CreateAsync(newUser);
@@ -50,7 +50,7 @@ namespace Jacmazon_ECommerce.Services
             return !users.Any();
         }
 
-        public async Task<Response<string>> UserVerify(UserViewModel userViewModel)
+        public async Task<Response<string>> UserVerify(UserParameter userViewModel)
         {
             //取得資料庫資料
             var data = (await _repository.FindAsync(u => u.Email ==  userViewModel.Email)).FirstOrDefault();
@@ -62,7 +62,7 @@ namespace Jacmazon_ECommerce.Services
                 };
             }
 
-            //將參數密碼加密
+            //密碼加密
             string hashedPassword = _hashingPassword.HashPassword(userViewModel.Password, data.Salt);
 
             //比較並回傳

@@ -1,22 +1,30 @@
 ﻿using AutoMapper;
 using Jacmazon_ECommerce.Extensions;
 using Jacmazon_ECommerce.Models.LoginContext;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using System.ComponentModel;
 
 namespace Jacmazon_ECommerce.ViewModels
 {
+    /// <summary>
+    /// 使用者登入資訊
+    /// </summary>
     [ModelMetadataType(typeof(UserMetaData))]
-    public class UserViewModel
+    
+    public class UserParameter
     {
         /// <summary>
         /// 電子信箱
         /// </summary>
+        //[DefaultValue("asdasd@gmail.com")]
         public string Email { get; set; } = null!;
 
         /// <summary>
         /// 密碼
         /// </summary>
+        //[DefaultValue("asdasdasd")]
         public string Password { get; set; } = null!;
     }
 
@@ -28,7 +36,7 @@ namespace Jacmazon_ECommerce.ViewModels
     {
         public UserViewModelProfile()
         {
-            CreateMap<UserViewModel, User>()
+            CreateMap<UserParameter, User>()
                 .IgnoreAllUnmapped()
                 .ForMember(u => u.Email, opt => opt.MapFrom(src => src.Email))
                 .ForMember(u => u.Password, opt => opt.MapFrom(src => src.Password));

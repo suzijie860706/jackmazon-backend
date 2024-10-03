@@ -33,6 +33,6 @@ namespace Jacmazon_ECommerce.Services
         /// </summary>
         /// <param name="userViewModel"></param>
         /// <returns></returns>
-        public Task<Response<string>> UserVerify(UserViewModel userViewModel);
+        public Task<Response<string>> UserVerify(UserParameter userViewModel);
     }
 }

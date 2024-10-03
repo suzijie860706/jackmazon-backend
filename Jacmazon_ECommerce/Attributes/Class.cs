@@ -10,10 +10,16 @@ namespace Jacmazon_ECommerce.Attributes
     public class EmailLengthAttribute : ValidationAttribute
     {
 
-        public int minimumLength;
-        public int maximumLength;
+        private int _minimumLength;
+        private int _maximumLength;
         /// <summary>錯誤訊息</summary>
         public string _errorMessage = string.Empty;
+
+        public EmailLengthAttribute(int minimumLength, int maximumLength)
+        {
+            _minimumLength = minimumLength;
+            _maximumLength = maximumLength;
+        }
 
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {
@@ -21,9 +27,9 @@ namespace Jacmazon_ECommerce.Attributes
             string[] emailPart = email.Split('@');
             if (emailPart.Length == 2)
             {
-                if (emailPart[0].Length < minimumLength || emailPart[0].Length > maximumLength)
+                if (emailPart[0].Length < _minimumLength || emailPart[0].Length > _maximumLength)
                 {
-                    return new ValidationResult($"很抱歉，使用者名稱長度必須介於 {minimumLength} 到 {maximumLength} 個半形字元之間");
+                    return new ValidationResult($"很抱歉，使用者名稱長度必須介於 {_minimumLength} 到 {_maximumLength} 個半形字元之間");
                 }
                 return ValidationResult.Success;
             }

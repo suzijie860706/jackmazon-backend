@@ -32,7 +32,7 @@ namespace Jacmazon_ECommerce.Tests.Controllers
         }
 
         [Test]
-        public async Task ProductList_WhenCalled_ReturnsOk()
+        public async Task List_WhenCalled_ReturnsOk()
         {
             //Arrange
             List<ProductViewModel> products = new List<ProductViewModel>()
@@ -43,7 +43,7 @@ namespace Jacmazon_ECommerce.Tests.Controllers
             _productService.GetAllProducts().Returns(products);
 
             //Act
-            var okObjectResult = await _controller.ProductList() as OkObjectResult;
+            var okObjectResult = await _controller.List() as OkObjectResult;
 
             //Assert
             Response<IEnumerable<ProductViewModel>>? responseData = okObjectResult?.Value as Response<IEnumerable<ProductViewModel>>;

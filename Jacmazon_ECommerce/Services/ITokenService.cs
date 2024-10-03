@@ -12,21 +12,21 @@ namespace Jacmazon_ECommerce.Services
         /// <summary>
         /// 新增JWT Token
         /// </summary>
-        /// <param name="email"></param>
+        /// <param name="email">電子信箱</param>
         /// <returns>TokenResponseDto Entity</returns>
         public Task<TokenViewModel> CreateTokenAsync(string email);
 
         /// <summary>
         /// 更新
         /// </summary>
-        /// <param name="refreshToken"></param>
+        /// <param name="refreshToken">權杖</param>
         /// <returns></returns>
         public Task<Response<string>> UpdateRefreshTokenAsync(string refreshToken);
 
         /// <summary>
         /// 刪除
         /// </summary>
-        /// <param name="refreshToken"></param>
+        /// <param name="refreshToken">權杖</param>
         /// <returns></returns>
         public Task<bool> DeleteRefreshTokenAsync(string refreshToken);
     }

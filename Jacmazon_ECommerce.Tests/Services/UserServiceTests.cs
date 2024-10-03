@@ -1,11 +1,14 @@
-﻿using Jacmazon_ECommerce.JWT;
-using Jacmazon_ECommerce.Repositories;
-using System.Net;
-using Jacmazon_ECommerce.Models.LoginContext;
-using NSubstitute;
-using Jacmazon_ECommerce.Services;
+﻿using System.Net;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq.Expressions;
+using Jacmazon_ECommerce.Models.LoginContext;
+using Jacmazon_ECommerce.Services;
+using Jacmazon_ECommerce.Repositories;
+using Jacmazon_ECommerce.JWT;
+using Jacmazon_ECommerce.ViewModels;
+using Jacmazon_ECommerce.Models;
+using NSubstitute;
+
 
 namespace Jacmazon_ECommerce.Tests.Services
 {
@@ -70,6 +73,106 @@ namespace Jacmazon_ECommerce.Tests.Services
 
             //Assert
             Assert.That(isValid, Is.False);
+        }
+
+        [Test]
+        public async Task IsPhoneNotRegisteredAsync_PhoneNotRegistered_ReturnsTrue()
+        {
+            //Arrange
+            string phone = "phone";
+            _repository.FindAsync(Arg.Any<Expression<Func<User, bool>>>()).Returns(Enumerable.Empty<User>());
+
+            //Act
+            bool isValid = await _userService.IsPhoneNotRegisteredAsync(phone);
+
+            //Assert
+            Assert.That(isValid, Is.True);
+        }
+
+        [Test]
+        public async Task IsPhoneNotRegisteredAsync_PhoneRegistered_ReturnsFalse()
+        {
+            //Arrange
+            string phone = "phone";
+            _repository.FindAsync(Arg.Any<Expression<Func<User, bool>>>()).Returns(new List<User>() { new User { Id = 1 } });
+
+            //Act
+            bool isValid = await _userService.IsPhoneNotRegisteredAsync(phone);
+
+            //Assert
+            Assert.That(isValid, Is.False);
+        }
+
+        [Test]
+        public async Task UserVerify_WhenCalled_ReturnsOk()
+        {
+            //Arrange
+            UserParameter userViewModel = new UserParameter() { Email = "email", Password = "password" };
+            List<User> users = new()
+            {
+                new User
+                {
+                    Email = userViewModel.Email,
+                    Password = userViewModel.Password,
+                    Salt = new byte[16]
+                }
+            };
+
+            _repository.FindAsync(Arg.Any<Expression<Func<User, bool>>>()).Returns(users);
+
+            _hashingPassword.HashPassword(userViewModel.Password, users[0].Salt).Returns(userViewModel.Password);
+
+            //Act
+            Response<string> response = await _userService.UserVerify(userViewModel);
+
+            //Assert
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response.Success, Is.True);
+        }
+
+        [Test]
+        public async Task UserVerify_UserNotFound_ReturnsErrorMsg()
+        {
+            //Arrange
+            UserParameter userViewModel = new UserParameter() { Email = "email", Password = "password" };
+
+            _repository.FindAsync(Arg.Any<Expression<Func<User, bool>>>()).Returns(new List<User>());
+
+            //Act
+            Response<string> response = await _userService.UserVerify(userViewModel);
+
+            //Assert
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response.Success, Is.False);
+            Assert.That(response.Message, Is.EqualTo("查無此帳號"));
+        }
+
+        [Test]
+        public async Task UserVerify_PasswordError_ReturnsErrorMsg()
+        {
+            //Arrange
+            UserParameter userViewModel = new UserParameter() { Email = "email", Password = "errorPassword" };
+            List<User> users = new()
+            {
+                new User
+                {
+                    Email = userViewModel.Email,
+                    Password = "password",
+                    Salt = new byte[16]
+                }
+            };
+
+            _repository.FindAsync(Arg.Any<Expression<Func<User, bool>>>()).Returns(users);
+
+            _hashingPassword.HashPassword(userViewModel.Password, users[0].Salt).Returns(userViewModel.Password);
+
+            //Act
+            Response<string> response = await _userService.UserVerify(userViewModel);
+
+            //Assert
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response.Success, Is.False);
+            Assert.That(response.Message, Is.EqualTo("密碼錯誤"));
         }
     }
 }

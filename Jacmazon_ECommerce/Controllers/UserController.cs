@@ -8,12 +8,14 @@ using Jacmazon_ECommerce.ViewModels;
 using Jacmazon_ECommerce.Extensions;
 using AutoMapper;
 using System.Runtime.Intrinsics.Arm;
+using Swashbuckle.AspNetCore.Annotations;
+using Jacmazon_ECommerce.ActionFilter;
 
 namespace Jacmazon_ECommerce.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
-    public class UsersController : ControllerBase
+    public class UserController : ControllerBase
     {
         private readonly IAntiforgery _antiforgery;
         private readonly IValidationService _validationService;
@@ -22,7 +24,7 @@ namespace Jacmazon_ECommerce.Controllers
         
         private readonly IMapper _mapper;
 
-        public UsersController(IAntiforgery antiforgery, IUserService userService, IValidationService validationService,
+        public UserController(IAntiforgery antiforgery, IUserService userService, IValidationService validationService,
             ITokenService tokenService, IMapper mapper)
         {
             _antiforgery = antiforgery;
@@ -36,8 +38,8 @@ namespace Jacmazon_ECommerce.Controllers
         /// 取得Lgg-----temperary
         /// </summary>
         /// <returns></returns>
-        [HttpGet("GetLogs")]
-        public IActionResult GetLogs()
+        [HttpGet("Logs")]
+        public IActionResult Logs()
         {
             var d = Directory.GetCurrentDirectory();
             string filePath = Path.Combine(d, $"Serilogs/log-{DateTime.Now.ToString("yyyyMMdd")}.txt");
@@ -60,8 +62,8 @@ namespace Jacmazon_ECommerce.Controllers
         /// 取得防偽表單Token
         /// </summary>
         /// <returns></returns>
-        [HttpGet("antiForgery")]
-        public IActionResult GetAntiforgeryToken()
+        [HttpGet("AntiforgeryToken")]
+        public IActionResult AntiforgeryToken()
         {
             var tokens = _antiforgery.GetAndStoreTokens(HttpContext);
             Response.Cookies.Append("XSRF-TOKEN", tokens.RequestToken!,
@@ -77,7 +79,11 @@ namespace Jacmazon_ECommerce.Controllers
         /// <returns></returns>
         [HttpPost("Login")]
         //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login([FromBody] UserViewModel user)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        //[SwaggerRequestExample(typeof(UserParameter), typeof(UserParameterExample))]
+        public async Task<IActionResult> Login([FromBody] UserParameter user)
         {
             // 驗證帳密
             Response<string> response = await _userService.UserVerify(user);
@@ -105,11 +111,11 @@ namespace Jacmazon_ECommerce.Controllers
         /// <summary>
         /// 註冊帳號
         /// </summary>
-        /// <param name="user"></param>
+        /// <param name="user">使用者資訊</param>
         /// <returns></returns>
         [HttpPost("CreateAccount")]
         //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateAccount([FromBody] UserViewModel user)
+        public async Task<IActionResult> CreateAccount([FromBody] UserParameter user)
         {
             //驗證Email
             bool isValid = await _userService.IsEmailNotRegisteredAsync(user.Email);
@@ -135,14 +141,14 @@ namespace Jacmazon_ECommerce.Controllers
         /// <summary>
         /// 取得新的Access Token
         /// </summary>
+        /// <param name="refreshToken">長期權杖</param>
         /// <returns></returns>
-        [HttpPost("Refresh_Token")]
+        [HttpPost("RefreshToken")]
         public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
         {
             Response<string> response = await _tokenService.UpdateRefreshTokenAsync(refreshToken);
 
             return Ok(response);
-
         }
 
         //[HttpGet("LoginIndex2")]
@@ -155,12 +161,12 @@ namespace Jacmazon_ECommerce.Controllers
         /// <summary>
         /// 登出
         /// </summary>
-        /// <param name="refreshToken"></param>
+        /// <param name="logoutParameter">使用者登出權杖</param>
         /// <returns></returns>
         [HttpPost("Logout")]
-        public async Task<IActionResult> Logout([FromBody] string refreshToken)
+        public async Task<IActionResult> Logout([FromBody] LogoutParameter logoutParameter)
         {
-            await _tokenService.DeleteRefreshTokenAsync(refreshToken);
+            await _tokenService.DeleteRefreshTokenAsync(logoutParameter.RefreshToken);
 
             return Ok(new Response<string>
             {
@@ -172,10 +178,10 @@ namespace Jacmazon_ECommerce.Controllers
         /// <summary>
         /// 驗證Email
         /// </summary>
-        /// <param name="email"></param>
+        /// <param name="email">電子信箱</param>
         /// <returns></returns>
-        [HttpPost("Email")]
-        public async Task<IActionResult> Email([FromBody] string email)
+        [HttpGet("VerifyEmail")]
+        public async Task<IActionResult> VerifyEmail([FromQuery] string email)
         {
             if (!_validationService.IsValidEmail(email))
             {
@@ -204,10 +210,10 @@ namespace Jacmazon_ECommerce.Controllers
         /// <summary>
         /// 驗證手機號碼
         /// </summary>
-        /// <param name="phone"></param>
+        /// <param name="phone">電話</param>
         /// <returns></returns>
-        [HttpPost("phone")]
-        public async Task<IActionResult> Phone([FromBody] string phone)
+        [HttpGet("VerifyPhone")]
+        public async Task<IActionResult> VerifyPhone([FromQuery] string phone)
         {
             if (!_validationService.IsValidPhone(phone))
             {
