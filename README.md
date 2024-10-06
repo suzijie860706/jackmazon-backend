@@ -4,8 +4,6 @@
 
 靜態API文件參考：https://suzijie860706.github.io/
 
-![App Screenshot](https://imgur.com/a/HjU2Roz)
-
 專案目標：  
 - 使用三層式分層設計分離關注點與職責，便於日後維後與管理
 - 實作會員登入JWT驗證
@@ -104,3 +102,50 @@ public class LoggerMiddleware
     }
 }
 ```
+
+NUNIT單元測試：  
+透過單元測試使專案保持穩定。
+```
+public class TokenServiceTests : PageTest
+{
+    private ICRUDRepository<Token> _repository;
+    private IJWTSettings _jwtSettings;
+    private TokenService tokenService;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _repository = Substitute.For<ICRUDRepository<Token>>();
+        _jwtSettings = Substitute.For<IJWTSettings>();
+        tokenService = new TokenService(_repository, _jwtSettings);
+    }
+
+    [Test]
+    public async Task CreateTokenAsync_WhenCalled_ReturnsToken()
+    {
+        //Arrange
+        string email = "email@gmail.com";
+        string refreshToken = "refreshToken";
+
+        _jwtSettings.CreateAccessToken(email).Returns("accessToken");
+        _jwtSettings.CreateRefreshToken(email).Returns(refreshToken);
+        Token token = new Token() { RefreshToken = refreshToken };
+        _repository.CreateAsync(token).Returns(true);
+
+        //Act
+        var result = await tokenService.CreateTokenAsync(email);
+
+        //Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.RefreshToken, Is.EqualTo("refreshToken"));
+        Assert.That(result.AccessToken, Is.EqualTo("accessToken"));
+    }
+}
+```
+
+Swagger：  
+自動化的API測試與靜態文件供前端參考  
+
+![App Screenshot](https://i.imgur.com/Rf181RL.png)
+
+![App Screenshot](https://i.imgur.com/GPulDQ7.png)
