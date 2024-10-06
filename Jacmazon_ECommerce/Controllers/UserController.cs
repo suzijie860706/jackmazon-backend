@@ -7,9 +7,6 @@ using Jacmazon_ECommerce.Models.LoginContext;
 using Jacmazon_ECommerce.ViewModels;
 using Jacmazon_ECommerce.Extensions;
 using AutoMapper;
-using System.Runtime.Intrinsics.Arm;
-using Swashbuckle.AspNetCore.Annotations;
-using Jacmazon_ECommerce.ActionFilter;
 
 namespace Jacmazon_ECommerce.Controllers
 {
@@ -79,10 +76,9 @@ namespace Jacmazon_ECommerce.Controllers
         /// <returns></returns>
         [HttpPost("Login")]
         //[ValidateAntiForgeryToken]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        //[SwaggerRequestExample(typeof(UserParameter), typeof(UserParameterExample))]
+        [ProducesResponseType(typeof(Response<TokenViewModel>), 200)]
+        [ProducesResponseType(typeof(Response<string>), 401)]
+        [ProducesResponseType(500)]
         public async Task<IActionResult> Login([FromBody] UserParameter user)
         {
             // 驗證帳密
@@ -114,6 +110,9 @@ namespace Jacmazon_ECommerce.Controllers
         /// <param name="user">使用者資訊</param>
         /// <returns></returns>
         [HttpPost("CreateAccount")]
+        [ProducesResponseType(typeof(Response<string>), 200)]
+        [ProducesResponseType(typeof(Response<string>), 401)]
+        [ProducesResponseType(500)]
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateAccount([FromBody] UserParameter user)
         {
@@ -240,6 +239,12 @@ namespace Jacmazon_ECommerce.Controllers
                 Success = true,
                 Status = StatusCodes.Status200OK,
             });
+        }
+
+        [HttpGet]
+        public ActionResult Test()
+        {
+            return Ok();
         }
     }
 }

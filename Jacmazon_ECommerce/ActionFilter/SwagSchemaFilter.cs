@@ -16,7 +16,6 @@ namespace Jacmazon_ECommerce.ActionFilter
                 {
                     emailProperty.MinLength = 6;
                     emailProperty.MaxLength = 30;
-                    
                     //emailProperty.Description += " (The local part of the email must be between 3 and 30 characters)";
                 }
             }

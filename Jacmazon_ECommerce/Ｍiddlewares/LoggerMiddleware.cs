@@ -19,8 +19,6 @@ namespace Jacmazon_ECommerce.Ｍiddlewares
         public async Task InvokeAsync(HttpContext context)
         {
             // 在這裡處理請求前的邏輯
-            //Debug.WriteLine($"Request: {context.Request.Method} {context.Request.Path}");
-
             try
             {
                 await _next(context);

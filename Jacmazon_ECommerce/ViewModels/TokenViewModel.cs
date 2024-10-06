@@ -8,17 +8,17 @@ namespace Jacmazon_ECommerce.ViewModels
     public class TokenViewModel
     {
         /// <summary>
-        /// 訪問權杖
+        /// 存取令牌
         /// </summary>
         public string AccessToken { get; set; } = null!;
 
         /// <summary>
-        /// 長期權杖
+        /// 刷新令牌
         /// </summary>
         public string RefreshToken { get; set; } = null!;
 
         /// <summary>
-        /// 長期權杖到期時間
+        /// 刷新令牌到期時間
         /// </summary>
         public DateTime RefreshTokenExpiryDate { get; set; }
     }

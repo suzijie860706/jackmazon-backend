@@ -70,7 +70,7 @@ namespace Jacmazon_ECommerce.Tests.Controllers
                 Email = "email",
                 Password = "password"
             };
-            _userService.UserVerify(userViewModel).Returns(new Response<string>(true));
+            _userService.UserVerify(userViewModel).Returns(new OkResponse(true));
 
             TokenViewModel tokenViewModel = new()
             {

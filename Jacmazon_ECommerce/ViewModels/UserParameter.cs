@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Jacmazon_ECommerce.ViewModels
 {
@@ -18,13 +19,11 @@ namespace Jacmazon_ECommerce.ViewModels
         /// <summary>
         /// 電子信箱
         /// </summary>
-        //[DefaultValue("asdasd@gmail.com")]
         public string Email { get; set; } = null!;
 
         /// <summary>
         /// 密碼
         /// </summary>
-        //[DefaultValue("asdasdasd")]
         public string Password { get; set; } = null!;
     }
 

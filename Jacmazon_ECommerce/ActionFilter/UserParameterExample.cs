@@ -1,19 +1,20 @@
-﻿using Jacmazon_ECommerce.Models.LoginContext;
-
+﻿using Jacmazon_ECommerce.Models;
+using Jacmazon_ECommerce.Models.LoginContext;
 using Jacmazon_ECommerce.ViewModels;
+using Swashbuckle.AspNetCore.Filters;
+using System.Net;
 
 namespace Jacmazon_ECommerce.ActionFilter
 {
-    //TODO:待修改成asp.net core版本
-    //public class UserParameterExample : IExamplesProvider
-    //{
-    //    public object GetExamples()
-    //    {
-    //        return new UserParameter
-    //        {
-    //            Email = "asdasd@gmail.com",
-    //            Password = "asdasdasd",
-    //        };
-    //    }
-    //}
+    public class UserParameterExample : IExamplesProvider<UserParameter>
+    {
+        public UserParameter GetExamples()
+        {
+            return new UserParameter
+            {
+                Email = "asdasd@gmail.com",
+                Password = "asdasdasd",
+            };
+        }
+    }
 }

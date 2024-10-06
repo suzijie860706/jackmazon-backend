@@ -46,7 +46,7 @@ namespace Jacmazon_ECommerce.Tests.Controllers
             var okObjectResult = await _controller.List() as OkObjectResult;
 
             //Assert
-            Response<IEnumerable<ProductViewModel>>? responseData = okObjectResult?.Value as Response<IEnumerable<ProductViewModel>>;
+            OkResponse<IEnumerable<ProductViewModel>>? responseData = okObjectResult?.Value as OkResponse<IEnumerable<ProductViewModel>>;
 
             Assert.That(responseData, Is.Not.Null);
             Assert.That(responseData.Success, Is.True);

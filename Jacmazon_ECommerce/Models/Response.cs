@@ -1,5 +1,4 @@
-﻿using Azure;
-using System.Net;
+﻿using System.Net;
 using System.Net.Mail;
 
 namespace Jacmazon_ECommerce.Models
@@ -22,42 +21,87 @@ namespace Jacmazon_ECommerce.Models
         {
         }
 
-        public Response(bool success)
+        //public Response(bool success)
+        //{
+        //    if (success)
+        //    {
+        //        Status = (int)HttpStatusCode.OK;
+        //    }
+        //    Success = success;
+        //}
+
+        //public Response<T> OkResponse(T data)
+        //{
+        //    return new Response<T>
+        //    {
+        //        Status = (int)HttpStatusCode.OK,
+        //        Success = true,
+        //        Data = data
+        //    };
+        //}
+
+        //public Response<T> ErrorResponse(int httpStatusCode, string message)
+        //{
+        //    return new Response<T>
+        //    {
+        //        Status = httpStatusCode,
+        //        Success = false,
+        //        Message = message
+        //    };
+        //}
+
+        //public Response<T> ErrorResponse(string message)
+        //{
+        //    return new Response<T>
+        //    {
+        //        Success = false,
+        //        Message = message
+        //    };
+        //}
+    }
+
+    public class OkResponse<T> : Response<T>
+    {
+        public OkResponse()
         {
-            if (success)
-            {
-                Status = (int)HttpStatusCode.OK;
-            }
-            Success = success;
+            Success = true;
+            Status = (int)HttpStatusCode.OK;
         }
 
-        public Response<T> OkResponse(T data)
+        public OkResponse(T data)
         {
-            return new Response<T>
-            {
-                Status = (int)HttpStatusCode.OK,
-                Success = true,
-                Data = data
-            };
+            Success = true;
+            Status = (int)HttpStatusCode.OK;
+            Data = data;
         }
+    }
 
-        public Response<T> ErrorResponse(int httpStatusCode, string message)
+    public class FailResponse401 : Response<string>
+    {
+        public FailResponse401(string errorMessage)
         {
-            return new Response<T>
-            {
-                Status = httpStatusCode,
-                Success = false,
-                Message = message
-            };
+            Success = false;
+            Status = (int)HttpStatusCode.Unauthorized;
+            Message = errorMessage;
         }
+    }
 
-        public Response<T> ErrorResponse(string message)
+    public class FailResponse400 : Response<string>
+    {
+        public FailResponse400(string errorMessage)
         {
-            return new Response<T>
-            {
-                Success = false,
-                Message = message
-            };
+            Success = false;
+            Status = (int)HttpStatusCode.BadRequest;
+            Message = errorMessage;
+        }
+    }
+
+    public class FailResponse500 : Response<string>
+    {
+        public FailResponse500()
+        {
+            Success = false;
+            Status = (int)HttpStatusCode.InternalServerError;
         }
     }
 }

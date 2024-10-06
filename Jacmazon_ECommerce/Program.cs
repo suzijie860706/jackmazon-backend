@@ -18,6 +18,9 @@ using AutoMapper;
 using Jacmazon_ECommerce.ActionFilter;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.Extensions.Options;
+using Swashbuckle.AspNetCore.Filters;
+using Microsoft.Build.Framework;
+using Microsoft.OpenApi.Any;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -143,7 +146,12 @@ builder.Services.AddSwaggerGen(options =>
     {
         Version = "v1",
         Title = "Jacmazon API",
-        Description = "An ASP.NET Core Web API for managing Jacmazon",
+        Description = $@"
+An ASP.NET Core Web API for JacmazonAPI.  
+Some useful links:
+- [The JacmazonAPI repository](https://github.com/suzijie860706/Jackmazon_backend)
+- [The source static API definition for the JacmazonAPI](https://suzijie860706.github.io/)",
+
         TermsOfService = new Uri("https://example.com/terms"),
         Contact = new OpenApiContact
         {
@@ -196,14 +204,16 @@ builder.Services.AddSwaggerGen(options =>
         if (methodName == "post") methodName = "";
         return $"{methodName}{e.ActionDescriptor.RouteValues["action"]}";
     });
-
-    //options.ParameterFilter<SwagParameterFilter>();
     //增加欄位自定義驗證內容
     options.SchemaFilter<SwagSchemaFilter>();
 
-    //options.OperationFilter<ExamplesOperationFilter<UserParameterExample>>(); 
+    //啟動Filters
+    options.ExampleFilters();
+
+    
 });
-//builder.Services.AddSwaggerGenNewtonsoftSupport(); // explicit opt-in - needs to be placed after AddSwaggerGen()
+// 啟用 Filters 服務
+builder.Services.AddSwaggerExamplesFromAssemblies(Assembly.GetEntryAssembly());
 #endregion
 
 //builder.Services.Configure
