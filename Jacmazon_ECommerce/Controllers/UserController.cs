@@ -184,25 +184,15 @@ namespace Jacmazon_ECommerce.Controllers
         {
             if (!_validationService.IsValidEmail(email))
             {
-                return Ok(new Response<string>
-                {
-                    Success = false,
-                    Status = StatusCodes.Status400BadRequest,
-                    Message = "格式錯誤",
-                });
+                return Ok(new FailResponse400("格式錯誤"));
             }
 
             if (!await _userService.IsEmailNotRegisteredAsync(email))
             {
-                return Ok(new Response<string>
-                {
-                    Success = false,
-                    Status = StatusCodes.Status401Unauthorized,
-                    Message = "電子信箱已註冊",
-                });
+                return Ok(new FailResponse401("電子信箱已註冊"));
             }
 
-            return Ok(new Response<string>(true));
+            return Ok(new OkResponse());
             
         }
 

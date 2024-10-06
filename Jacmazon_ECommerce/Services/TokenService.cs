@@ -81,7 +81,7 @@ namespace Jacmazon_ECommerce.Services
 
             string accessToken = _jwtSettings.CreateRefreshToken(email);
 
-            return new Response<string>().OkResponse(accessToken);
+            return new OkResponse<string>(accessToken);
         }
 
         public async Task<bool> DeleteRefreshTokenAsync(string refreshToken)

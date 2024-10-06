@@ -68,11 +68,11 @@ namespace Jacmazon_ECommerce.Services
             //比較並回傳
             if (data.Password == hashedPassword)
             {
-                return new Response<string>(true);
+                return new OkResponse();
             }
             else
             {
-                return new Response<string>().ErrorResponse("密碼錯誤");
+                return new FailResponse401("密碼錯誤");
             }
 
         }

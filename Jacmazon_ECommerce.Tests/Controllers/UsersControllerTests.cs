@@ -70,7 +70,7 @@ namespace Jacmazon_ECommerce.Tests.Controllers
                 Email = "email",
                 Password = "password"
             };
-            _userService.UserVerify(userViewModel).Returns(new OkResponse(true));
+            _userService.UserVerify(userViewModel).Returns(new OkResponse());
 
             TokenViewModel tokenViewModel = new()
             {
@@ -100,7 +100,7 @@ namespace Jacmazon_ECommerce.Tests.Controllers
                 Email = "email",
                 Password = "password"
             };
-            _userService.UserVerify(userViewModel).Returns(new Response<string>(false));
+            _userService.UserVerify(userViewModel).Returns(new FailResponse401("±b¸¹©Î±K½X¿ù»~"));
 
             //Act
             var okObjectResult = await _controller.Login(userViewModel) as OkObjectResult;
@@ -189,7 +189,7 @@ namespace Jacmazon_ECommerce.Tests.Controllers
         {
             //Arrange
             string refreshToken = "validToken";
-            var response = new Response<string>().OkResponse("newAccessToken");
+            var response = new OkResponse<string>("newAccessToken");
             _tokenService.UpdateRefreshTokenAsync(refreshToken).Returns(response);
             //Act
             var okObjectResult = await _controller.RefreshToken(refreshToken) as OkObjectResult;

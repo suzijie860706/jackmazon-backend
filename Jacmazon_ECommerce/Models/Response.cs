@@ -16,48 +16,15 @@ namespace Jacmazon_ECommerce.Models
         public string? Message { get; set; } = "";
 
         public T? Data { get; set; } = default;
+    }
 
-        public Response()
+    public class OkResponse : Response<string>
+    {
+        public OkResponse()
         {
+            Success = true;
+            Status = (int)HttpStatusCode.OK;
         }
-
-        //public Response(bool success)
-        //{
-        //    if (success)
-        //    {
-        //        Status = (int)HttpStatusCode.OK;
-        //    }
-        //    Success = success;
-        //}
-
-        //public Response<T> OkResponse(T data)
-        //{
-        //    return new Response<T>
-        //    {
-        //        Status = (int)HttpStatusCode.OK,
-        //        Success = true,
-        //        Data = data
-        //    };
-        //}
-
-        //public Response<T> ErrorResponse(int httpStatusCode, string message)
-        //{
-        //    return new Response<T>
-        //    {
-        //        Status = httpStatusCode,
-        //        Success = false,
-        //        Message = message
-        //    };
-        //}
-
-        //public Response<T> ErrorResponse(string message)
-        //{
-        //    return new Response<T>
-        //    {
-        //        Success = false,
-        //        Message = message
-        //    };
-        //}
     }
 
     public class OkResponse<T> : Response<T>
