@@ -4,6 +4,8 @@
 
 靜態API文件參考：https://suzijie860706.github.io/
 
+![App Screenshot](https://imgur.com/a/HjU2Roz)
+
 專案目標：  
 - 使用三層式分層設計分離關注點與職責，便於日後維後與管理
 - 實作會員登入JWT驗證
