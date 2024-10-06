@@ -83,7 +83,7 @@ namespace Jacmazon_ECommerce.Tests.Controllers
             var okObjectResult = await _controller.Login(userViewModel) as OkObjectResult;
 
             //Assert
-            Response<TokenViewModel>? responseData = okObjectResult?.Value as Response<TokenViewModel>;
+            OkResponse<TokenViewModel>? responseData = okObjectResult?.Value as OkResponse<TokenViewModel>;
 
             Assert.IsNotNull(responseData);
             Assert.IsTrue(responseData.Success);

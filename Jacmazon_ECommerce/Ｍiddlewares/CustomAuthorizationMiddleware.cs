@@ -34,14 +34,7 @@ namespace Jacmazon_ECommerce.Ｍiddlewares
             if (WWW_Authenticate.Contains("Bearer"))
             {
                 //回傳token
-                var response = new Response<string>
-                {
-                    Success = false,
-                    Status = StatusCodes.Status401Unauthorized,
-                    Message = "Authorization failed. Access denied.",
-                    Data = ""
-                };
-
+                var response = new FailResponse401("Authorization failed. Access denied.");
                 await context.Response.WriteAsync(JsonSerializer.Serialize(response));
             }
 

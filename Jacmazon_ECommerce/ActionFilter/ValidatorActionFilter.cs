@@ -34,7 +34,7 @@ namespace Jacmazon_ECommerce.ActionFilter
                     dic.Add(key, value);
                 }
 
-                var response = new Response<Dictionary<string, string>>
+                var response = new FailResponse400<Dictionary<string, string>>
                 {
                     Success = false,
                     Status = StatusCodes.Status400BadRequest,

@@ -25,12 +25,7 @@ namespace Jacmazon_ECommerce.Ｍiddlewares
             }
             catch (Exception)
             {
-                var response = new Response<string>
-                {
-                    Success = false,
-                    Status = StatusCodes.Status500InternalServerError,
-                    Message = "伺服器發生錯誤，請稍後再試",
-                };
+                var response = new FailResponse500("伺服器發生錯誤，請稍後再試");
 
                 context.Response.StatusCode = (int)HttpStatusCode.OK;
                 context.Response.ContentType = "application/json";   //add this line.....

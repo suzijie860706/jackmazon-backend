@@ -76,32 +76,21 @@ namespace Jacmazon_ECommerce.Controllers
         /// <returns></returns>
         [HttpPost("Login")]
         //[ValidateAntiForgeryToken]
-        [ProducesResponseType(typeof(Response<TokenViewModel>), 200)]
-        [ProducesResponseType(typeof(Response<string>), 401)]
-        [ProducesResponseType(500)]
+        [ProducesResponseType(typeof(OkResponse<TokenViewModel>), 200)]
+        [ProducesResponseType(typeof(FailResponse401), 401)]
         public async Task<IActionResult> Login([FromBody] UserParameter user)
         {
             // 驗證帳密
             Response<string> response = await _userService.UserVerify(user);
             if (!response.Success)
             {
-                return Ok(new Response<string>
-                {
-                    Success = false,
-                    Status = StatusCodes.Status401Unauthorized,
-                    Message = "帳號或密碼錯誤",
-                });
+                return Ok(new FailResponse401("帳號或密碼錯誤"));
             }
 
             //建立Token
             TokenViewModel token1 = await _tokenService.CreateTokenAsync(user.Email);
 
-            return Ok(new Response<TokenViewModel>
-            {
-                Success = true,
-                Status = StatusCodes.Status200OK,
-                Data = token1
-            });
+            return Ok(new OkResponse<TokenViewModel>(token1));
         }
 
         /// <summary>
@@ -110,9 +99,8 @@ namespace Jacmazon_ECommerce.Controllers
         /// <param name="user">使用者資訊</param>
         /// <returns></returns>
         [HttpPost("CreateAccount")]
-        [ProducesResponseType(typeof(Response<string>), 200)]
-        [ProducesResponseType(typeof(Response<string>), 401)]
-        [ProducesResponseType(500)]
+        [ProducesResponseType(typeof(OkResponse), 200)]
+        [ProducesResponseType(typeof(FailResponse401), 401)]
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateAccount([FromBody] UserParameter user)
         {
@@ -120,21 +108,12 @@ namespace Jacmazon_ECommerce.Controllers
             bool isValid = await _userService.IsEmailNotRegisteredAsync(user.Email);
             if (!isValid)
             {
-                return Ok(new Response<string>
-                {
-                    Success = false,
-                    Status = StatusCodes.Status401Unauthorized,
-                    Message = "帳號已建立",
-                });
+                return Ok(new FailResponse401("帳號已建立"));
             }
 
             await _userService.CreateUserAsync(user.Email, user.Password);
 
-            return Ok(new Response<string>
-            {
-                Success = true,
-                Status = StatusCodes.Status200OK,
-            });
+            return Ok(new OkResponse());
         }
 
         /// <summary>
@@ -143,6 +122,7 @@ namespace Jacmazon_ECommerce.Controllers
         /// <param name="refreshToken">長期權杖</param>
         /// <returns></returns>
         [HttpPost("RefreshToken")]
+        [ProducesResponseType(typeof(OkResponse), 200)]
         public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
         {
             Response<string> response = await _tokenService.UpdateRefreshTokenAsync(refreshToken);
@@ -163,15 +143,12 @@ namespace Jacmazon_ECommerce.Controllers
         /// <param name="logoutParameter">使用者登出權杖</param>
         /// <returns></returns>
         [HttpPost("Logout")]
+        [ProducesResponseType(typeof(OkResponse), 200)]
         public async Task<IActionResult> Logout([FromBody] LogoutParameter logoutParameter)
         {
             await _tokenService.DeleteRefreshTokenAsync(logoutParameter.RefreshToken);
 
-            return Ok(new Response<string>
-            {
-                Success = true,
-                Status = StatusCodes.Status200OK,
-            });
+            return Ok(new OkResponse());
         }
 
         /// <summary>
@@ -180,6 +157,9 @@ namespace Jacmazon_ECommerce.Controllers
         /// <param name="email">電子信箱</param>
         /// <returns></returns>
         [HttpGet("VerifyEmail")]
+        [ProducesResponseType(typeof(OkResponse), 200)]
+        [ProducesResponseType(typeof(FailResponse400), 400)]
+        [ProducesResponseType(typeof(FailResponse401), 401)]
         public async Task<IActionResult> VerifyEmail([FromQuery] string email)
         {
             if (!_validationService.IsValidEmail(email))
@@ -202,39 +182,22 @@ namespace Jacmazon_ECommerce.Controllers
         /// <param name="phone">電話</param>
         /// <returns></returns>
         [HttpGet("VerifyPhone")]
+        [ProducesResponseType(typeof(OkResponse), 200)]
+        [ProducesResponseType(typeof(FailResponse400), 400)]
+        [ProducesResponseType(typeof(FailResponse401), 401)]
         public async Task<IActionResult> VerifyPhone([FromQuery] string phone)
         {
             if (!_validationService.IsValidPhone(phone))
             {
-                return Ok(new Response<string>
-                {
-                    Success = false,
-                    Status = StatusCodes.Status400BadRequest,
-                    Message = "格式錯誤",
-                });
+                return Ok(new FailResponse400("格式錯誤"));
             }
 
             if (!await _userService.IsPhoneNotRegisteredAsync(phone))
             {
-                return Ok(new Response<string>
-                {
-                    Success = false,
-                    Status = StatusCodes.Status401Unauthorized,
-                    Message = "手機號碼已註冊",
-                });
+                return Ok(new FailResponse401("手機號碼已註冊"));
             }
 
-            return Ok(new Response<string>
-            {
-                Success = true,
-                Status = StatusCodes.Status200OK,
-            });
-        }
-
-        [HttpGet]
-        public ActionResult Test()
-        {
-            return Ok();
+            return Ok(new OkResponse());
         }
     }
 }

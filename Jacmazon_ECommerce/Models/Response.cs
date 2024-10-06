@@ -7,7 +7,7 @@ namespace Jacmazon_ECommerce.Models
     /// 回傳格式
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class Response<T>
+    public abstract class Response<T>
     {
         public bool Success { get; set; } = false;
 
@@ -43,16 +43,6 @@ namespace Jacmazon_ECommerce.Models
         }
     }
 
-    public class FailResponse401 : Response<string>
-    {
-        public FailResponse401(string errorMessage)
-        {
-            Success = false;
-            Status = (int)HttpStatusCode.Unauthorized;
-            Message = errorMessage;
-        }
-    }
-
     public class FailResponse400 : Response<string>
     {
         public FailResponse400(string errorMessage)
@@ -63,12 +53,34 @@ namespace Jacmazon_ECommerce.Models
         }
     }
 
+    public class FailResponse400<T> : Response<T>{}
+
+    public class FailResponse401 : Response<string>
+    {
+        public FailResponse401(string errorMessage)
+        {
+            Success = false;
+            Status = (int)HttpStatusCode.Unauthorized;
+            Message = errorMessage;
+        }
+    }
+
+    public class FailResponse404 : Response<string>
+    {
+        public FailResponse404(string errorMessage)
+        {
+            Success = false;
+            Status = (int)HttpStatusCode.NotFound;
+            Message = errorMessage;
+        }
+    }
     public class FailResponse500 : Response<string>
     {
-        public FailResponse500()
+        public FailResponse500(string errorMessage)
         {
             Success = false;
             Status = (int)HttpStatusCode.InternalServerError;
+            Message = errorMessage;
         }
     }
 }

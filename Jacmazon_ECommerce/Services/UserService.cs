@@ -56,10 +56,7 @@ namespace Jacmazon_ECommerce.Services
             var data = (await _repository.FindAsync(u => u.Email ==  userViewModel.Email)).FirstOrDefault();
             if (data == null)
             {
-                return new Response<string>()
-                {
-                    Message = "查無此帳號"
-                };
+                return new FailResponse404("查無此帳號");
             }
 
             //密碼加密
@@ -74,7 +71,6 @@ namespace Jacmazon_ECommerce.Services
             {
                 return new FailResponse401("密碼錯誤");
             }
-
         }
     }
 }

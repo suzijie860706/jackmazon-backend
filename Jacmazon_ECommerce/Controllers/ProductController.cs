@@ -33,12 +33,7 @@ namespace Jacmazon_ECommerce.Controllers
         {
             IEnumerable<ProductViewModel> productResponseDtos = await _productService.GetAllProducts();
 
-            return Ok(new Response<IEnumerable<ProductViewModel>>
-            {
-                Success = true,
-                Status = StatusCodes.Status200OK,
-                Data = productResponseDtos
-            });
+            return Ok(new OkResponse<IEnumerable<ProductViewModel>>(productResponseDtos));
         }
     }
 }

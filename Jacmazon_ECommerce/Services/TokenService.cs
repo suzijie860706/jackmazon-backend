@@ -48,8 +48,6 @@ namespace Jacmazon_ECommerce.Services
 
         public async Task<Response<string>> UpdateRefreshTokenAsync(string refreshToken)
         {
-            Response<string> response = new();
-
             //JWT資訊
             JwtSecurityToken? jwtSecurityToken = _jwtSettings.ReadToken(refreshToken);
 
@@ -57,17 +55,13 @@ namespace Jacmazon_ECommerce.Services
             List<Token> tokens = (await _repository.FindAsync(u => u.RefreshToken == refreshToken)).ToList();
             if (tokens.Count == 0 || jwtSecurityToken == null)
             {
-                response.Status = (int)HttpStatusCode.NotFound;
-                response.Message = "查無此Token";
-                return response;
+                return new FailResponse404("查無此Token");
             }
             Token token = tokens[0];
 
             if (DateTime.Now > token.ExpiredDate)
             {
-                response.Status = (int)HttpStatusCode.Unauthorized;
-                response.Message = "RefreshToken已過期";
-                return response;
+                return new FailResponse401("RefreshToken已過期");
             }
 
             //更新Table
