@@ -29,7 +29,6 @@ var configuration = new ConfigurationBuilder()
         .SetBasePath(Directory.GetCurrentDirectory())
         .AddJsonFile(path: "appsettings.json", optional: false, reloadOnChange: true)
         .Build();
-
 //使用從 appsettings.json 讀取到的內容來設定 logger
 Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(configuration).CreateLogger();

@@ -10,7 +10,7 @@ using System.Linq.Expressions;
 namespace Jacmazon_ECommerce.Tests.Services
 {
     [TestFixture]
-    public class TokenServiceTests : PageTest
+    public class TokenServiceTests
     {
         private ICRUDRepository<Token> _repository;
         private IJWTSettings _jwtSettings;

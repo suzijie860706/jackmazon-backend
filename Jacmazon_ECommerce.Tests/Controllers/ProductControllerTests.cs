@@ -18,7 +18,7 @@ namespace Jacmazon_ECommerce.Tests.Controllers
 {
     [Parallelizable(ParallelScope.Self)]
     [TestFixture]
-    public class ProductControllerTests : PageTest
+    public class ProductControllerTests
     {
         private IProductService _productService;
         private ProductController _controller;

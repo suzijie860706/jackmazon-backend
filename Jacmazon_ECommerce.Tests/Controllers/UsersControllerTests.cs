@@ -14,7 +14,7 @@ namespace Jacmazon_ECommerce.Tests.Controllers
 {
     [Parallelizable(ParallelScope.Self)]
     [TestFixture]
-    public class UsersControllerTests : PageTest
+    public class UsersControllerTests
     {
         private IAntiforgery _antiforgery;
         private IUserService _userService;

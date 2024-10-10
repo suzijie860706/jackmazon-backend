@@ -13,7 +13,7 @@ using NSubstitute;
 namespace Jacmazon_ECommerce.Tests.Services
 {
     [TestFixture]
-    public class UserServiceTests : PageTest
+    public class UserServiceTests
     {
         private ICRUDRepository<User> _repository;
         private IHashingPassword _hashingPassword;
