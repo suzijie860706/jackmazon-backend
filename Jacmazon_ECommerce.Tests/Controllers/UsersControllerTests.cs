@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
 using System.Net;
-using Microsoft.IdentityModel.Protocols.WsTrust;
 
 namespace Jacmazon_ECommerce.Tests.Controllers
 {
@@ -24,7 +23,7 @@ namespace Jacmazon_ECommerce.Tests.Controllers
 
 
         private UserController _controller;
-        private MapperConfiguration config;
+
 
         [SetUp]
         public void SetUp()
@@ -34,11 +33,11 @@ namespace Jacmazon_ECommerce.Tests.Controllers
             _userService = Substitute.For<IUserService>();
             _tokenService = Substitute.For<ITokenService>();
 
-            config = new MapperConfiguration(cfg =>
-            {
-                // 手動添加所有的 AutoMapper Profile
-                cfg.AddProfile(new UserViewModelProfile());
-            });
+            MapperConfiguration config = new MapperConfiguration(cfg =>
+                {
+                    // 手動添加所有的 AutoMapper Profile
+                    cfg.AddProfile(new UserViewModelProfile());
+                });
 
             _mapper = config.CreateMapper();
 

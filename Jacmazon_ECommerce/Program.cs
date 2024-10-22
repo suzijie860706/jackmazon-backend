@@ -24,6 +24,8 @@ using Microsoft.OpenApi.Any;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+#region Log
 //從 appsettings.json 讀取設定資料
 var configuration = new ConfigurationBuilder()
         .SetBasePath(Directory.GetCurrentDirectory())
@@ -35,6 +37,7 @@ Log.Logger = new LoggerConfiguration()
 
 // 將 Serilog 註冊為日誌記錄提供程序
 builder.Host.UseSerilog();
+#endregion
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -218,19 +221,20 @@ builder.Services.AddSwaggerExamplesFromAssemblies(Assembly.GetEntryAssembly());
 //builder.Services.Configure
 var app = builder.Build();
 
-#region 自定義Middleware
-// 自定義JTW [Authorize] 未通過時Response
-app.UseCustomAuthorization();
+// 驗證 AutoMapper 配置
+var mapper = app.Services.GetRequiredService<IMapper>();
+mapper.ConfigurationProvider.AssertConfigurationIsValid();
 
-//Logger
-app.UseLogger();
+#region 自定義Middleware
+app.UseCustomAuthorization(); //Customer JWT Validation Response
+app.UseLogger(); //Logger
 #endregion
 
 // Configure the HTTP request pipeline.
 //TODO:IIS發行，暫時關閉
 //if (app.Environment.IsDevelopment()) 
 //{
-    app.UseSwagger();
+app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");

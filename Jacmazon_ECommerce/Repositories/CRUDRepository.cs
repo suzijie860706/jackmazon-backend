@@ -40,7 +40,6 @@ namespace Jacmazon_ECommerce.Repositories
 
         public async Task<TEntity?> FindByIdAsync(int id)
         {
-            var a = await _context.FindAsync(typeof(TEntity), 1);
             return await _dbSet.FindAsync(id);
         }
 

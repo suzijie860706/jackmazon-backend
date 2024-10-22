@@ -44,7 +44,6 @@ x64/
 *.log
 *.svclog
 *.scc
-
 # Visual C++ cache files
 ipch/
 *.aps
@@ -135,3 +134,8 @@ _NCrunch*
 
 #log
 [Ss]erilogs/
+
+//google api
+credentials.json
+*.credentials.json
+**/credentials/*.json
